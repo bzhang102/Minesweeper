@@ -1,54 +1,70 @@
-# Minesweeper
+# Multiplayer Minesweeper
+
+A real-time cooperative Minesweeper game where multiple players can work together to clear the board.
+
+## Project Structure
+
+- **Core Game Logic**: Minesweeper engine, game rules, difficulty settings
+- **Frontend**: Game board UI, settings interface, real-time updates
+- **Multiplayer**: WebSocket handling, game state synchronization
+- **Database**: User authentication, leaderboards, game history
+
+## Technology Stack
+
+- **Backend**: Node.js
+- **Frontend**: React
+- **WebSockets**: Socket.io
+- **Hosting**: DigitalOcean
 
 ## Development Workflow
 
 ### Branch Structure
-- `main` - Production branch, stable code only
-- `dev` - Development branch, features are merged here first
+- `main` - Main development branch
 - `feature/[feature-name]` - Individual feature branches
 
 ### Workflow Steps
-1. **Starting New Work**
-   - Create a new branch from `dev`
-   - Use naming convention: `feature/game-logic`, `feature/multiplayer`, etc.
-   - `git checkout dev`
-   - `git pull origin dev`
-   - `git checkout -b feature/your-feature`
+#### 1. Starting New Work
+- Create a new branch from `main`
+- Use naming convention: `feature/game-logic`, `feature/multiplayer`, etc.
+```bash
+git checkout main
+git pull origin main
+git checkout -b feature/your-feature
+```
+#### 2. During Development
+- Commit regularly with clear messages
+- Keep pulls from main to stay updated
+```bash
+git commit -m "descriptive message"
+git pull origin main
+```
+#### 3. Submitting Changes
+- Push your feature branch
+- Create a Pull Request (PR) to main
+- Get review from teammate
 
-2. **During Development**
-   - Commit frequently with clear messages
-   - Keep commits focused and atomic
-   - Pull from `dev` regularly to stay updated
-   - `git commit -m "descriptive message"`
-   - `git pull origin dev`
-
-3. **Submitting Changes**
-   - Push your feature branch
-   - Create a Pull Request (PR) to `dev`
-   - Request review from at least one team member
-   - `git push origin feature/your-feature`
-
-4. **Code Review**
-   - Team members review code
-   - Address feedback and make changes
-   - Reviewers approve when ready
-   - Changes merged to `dev`
-
-5. **Release Process**
-   - Features accumulated in `dev` are tested
-   - When stable, `dev` is merged to `main`
-   - Create version tag for release
-
-### Commit Message Guidelines
-- Start with verb in present tense
+```bash
+git push origin feature/your-feature
+```
+### Commit Messages
+- Start with verb (add, fix, update)
 - Be descriptive but concise
-- Example formats:
-  - `Add mine placement logic`
-  - `Fix websocket disconnect handler`
-  - `Update game settings interface`
+- Examples:
+   - Add mine placement logic
+   - Fix websocket disconnect issue
+   - Update game settings UI
 
-### Pull Request Guidelines
-- Describe changes clearly
-- Reference related issues
-- Include testing steps
-- List any new dependencies
+### Setup Instructions
+1. Clone the repository
+```bash
+git clone https://github.com/bzhang102/Minesweeper.git
+cd multiplayer-minesweeper
+```
+2. Install dependencies
+```bash
+npm install
+```
+3. Start development server
+```bash
+npm run dev
+```
