@@ -22,7 +22,7 @@ A real-time cooperative Minesweeper game where multiple players can work togethe
 ### Prerequisites
 1. Install Nix:
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf -L https://install.nixos.org | sh
+sh <(curl -L https://nixos.org/nix/install)
 ```
 2. Enable Flakes
 ```bash
