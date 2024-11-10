@@ -15,7 +15,24 @@ A real-time cooperative Minesweeper game where multiple players can work togethe
 - **Frontend**: React
 - **WebSockets**: Socket.io
 - **Hosting**: DigitalOcean
+- **Development**: Nix for reproducible environments
 
+## Development Setup
+
+### Prerequisites
+1. Install Nix:
+```bash
+curl --proto '=https' --tlsv1.2 -sSf -L https://install.nixos.org | sh
+```
+2. Enable Flakes
+```bash
+mkdir -p ~/.config/nix
+echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+```
+3. Enter Dev Environment:
+```bash
+nix develop
+```
 ## Development Workflow
 
 ### Branch Structure
@@ -60,11 +77,10 @@ git push origin feature/your-feature
 git clone https://github.com/bzhang102/Minesweeper.git
 cd multiplayer-minesweeper
 ```
-2. Install dependencies
+2. Enter Nix development environment
+```bash
+nix develop
+```
+3. Install dependencies
 ```bash
 npm install
-```
-3. Start development server
-```bash
-npm run dev
-```
