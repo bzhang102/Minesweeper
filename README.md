@@ -58,7 +58,7 @@ git pull origin main
 #### 3. Submitting Changes
 - Push your feature branch
 - Create a Pull Request (PR) to main
-- Get review from teammate
+- ***GET A REVIEW BEFORE MERGING***
 
 ```bash
 git push origin feature/your-feature
