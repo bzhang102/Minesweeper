@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Login.css';
 
-const Login = ({ onLogin }) => {
+const CreateAccount = ({ onCreateAccount }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -13,9 +13,9 @@ const Login = ({ onLogin }) => {
     setError('');
     
     try {
-      await onLogin(username, password);
+      await onCreateAccount(username, password);
     } catch (error) {
-      setError('Login failed. Please try again.');
+      setError('Account creation failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -24,7 +24,7 @@ const Login = ({ onLogin }) => {
   return (
     <div className='container'>
       <div className='header'>
-        <div className="text">Login</div>
+        <div className="text">Create Account</div>
         <div className="underline"></div>
       </div>
       <form onSubmit={handleSubmit}>
@@ -53,15 +53,15 @@ const Login = ({ onLogin }) => {
             className="submit"
             disabled={isLoading}
           >
-            {isLoading ? 'Logging in...' : 'Login'}
+            {isLoading ? 'Creating account...' : 'Create Account'}
           </button>
         </div>
       </form>
       <div className="switch-page">
-      Don't have an account? <a href="/create-account">Create Account</a>
+        Already have an account? <a href="/login">Login</a>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default CreateAccount;

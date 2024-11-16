@@ -65,9 +65,10 @@
   }
   
   .submit-container {
-    display: flex;
-    gap: 30px;
-    margin: 40px auto;
+    display: flex; /* Use flexbox for alignment */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    margin-top: 20px; /* Add some spacing from the inputs */
   }
   
   .submit {
@@ -89,6 +90,12 @@
   .submit:hover {
     background: rgba(255, 255, 255, 0.2);
   }
+
+/* Disabled button styling */
+.submit:disabled {
+  background-color: #ccc; /* Light gray for disabled state */
+  cursor: not-allowed;
+}
   
   /* Add to App.css or make sure body has this background */
   body {
@@ -111,4 +118,32 @@
       flex-direction: column;
       align-items: center;
     }
+  }
+
+  .error-message {
+    color: #ff3333;
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+  
+  input:disabled,
+  button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .switch-page {
+    margin-top: 10px;
+    text-align: center;
+  }
+  
+  .switch-page a {
+    color: #007BFF;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  
+  .switch-page a:hover {
+    text-decoration: underline;
   }
