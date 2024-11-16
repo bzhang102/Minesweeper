@@ -1,26 +1,32 @@
-import { useState } from 'react'
-import './App.css'
-import Login from './Login'
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Login from './Login';
+import CreateAccount from './CreateAccount';
+import './App.css';
+
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+}
 
 function App() {
   const handleLogin = async (username, password) => {
     try {
+      const hashedPassword = await hashPassword(password);
       const response = await fetch('http://localhost:3000/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password: hashedPassword }),
       });
 
       const data = await response.json();
-      
-      if (response.ok) {
-        // Handle successful login
+      if (data.ok) {
         console.log('Login successful:', data);
-        // You can add additional logic here (e.g., storing token, redirecting)
+        navigate('/dashboard'); // Redirect to the dashboard
       } else {
-        // Handle login error
         console.error('Login failed:', data);
       }
     } catch (error) {
@@ -28,10 +34,35 @@ function App() {
     }
   };
 
+  const handleCreateAccount = async (username, password) => {
+    try {
+      const hashedPassword = await hashPassword(password);
+      const response = await fetch('http://localhost:3000/create-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password: hashedPassword }),
+      });
+
+      const data = await response.json();
+      if (data.ok) {
+        console.log('Account created successfully:', data);
+        navigate('/dashboard'); // Redirect to the dashboard
+      } else {
+        console.error('Account creation failed:', data);
+      }
+    } catch (error) {
+      console.error('Error during account creation:', error);
+    }
+  };
+
   return (
-    <>
-      <Login onLogin={handleLogin} />
-    </>
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login onLogin={handleLogin} />} />
+        <Route path="/create-account" element={<CreateAccount onCreateAccount={handleCreateAccount} />} />
+        <Route path="/dashboard" element={<h1>Welcome to the Game</h1>} />
+      </Routes>
+    </Router>
   );
 }
 
