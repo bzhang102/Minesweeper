@@ -47,89 +47,89 @@ server.listen(3000, () => {
   console.log("Server running on port 3000");
 });
 
-// // for testing
-// app.get("/", (req, res) => {
-//   res.send(`
-//     <html>
-//       <head>
-//         <style>
-//           .board {
-//             display: grid;
-//             grid-template-columns: repeat(16, 30px);
-//             gap: 1px;
-//             background: #ccc;
-//             padding: 10px;
-//           }
-//           .cell {
-//             width: 30px;
-//             height: 30px;
-//             background: #eee;
-//             display: flex;
-//             align-items: center;
-//             justify-content: center;
-//             cursor: pointer;
-//           }
-//           .revealed { background: #fff; }
-//           .mine { background: red; }
-//           .flag { background: yellow; }
-//         </style>
-//       </head>
-//       <body>
-//         <div id="controls">
-//           <button id="resetBtn">Reset Board</button>
-//         </div>
-//         <div id="board" class="board"></div>
-//         <div id="status"></div>
+// for testing
+app.get("/", (req, res) => {
+  res.send(`
+    <html>
+      <head>
+        <style>
+          .board {
+            display: grid;
+            grid-template-columns: repeat(16, 30px);
+            gap: 1px;
+            background: #ccc;
+            padding: 10px;
+          }
+          .cell {
+            width: 30px;
+            height: 30px;
+            background: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+          }
+          .revealed { background: #fff; }
+          .mine { background: red; }
+          .flag { background: yellow; }
+        </style>
+      </head>
+      <body>
+        <div id="controls">
+          <button id="resetBtn">Reset Board</button>
+        </div>
+        <div id="board" class="board"></div>
+        <div id="status"></div>
 
-//         <script src="/socket.io/socket.io.js"></script>
-//         <script>
-//           const socket = io();
-//           const board = document.getElementById('board');
-//           const status = document.getElementById('status');
-//           const resetBtn = document.getElementById('resetBtn');
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+          const socket = io();
+          const board = document.getElementById('board');
+          const status = document.getElementById('status');
+          const resetBtn = document.getElementById('resetBtn');
 
-//           resetBtn.addEventListener('click', () => {
-//             socket.emit('reset');
-//           });
+          resetBtn.addEventListener('click', () => {
+            socket.emit('reset');
+          });
 
-//           function updateBoard(gameState) {
-//             board.innerHTML = '';
-//             gameState.board.forEach((row, y) => {
-//               row.forEach((cell, x) => {
-//                 const div = document.createElement('div');
-//                 div.className = 'cell';
-//                 if (cell.isRevealed) {
-//                   div.className += ' revealed';
-//                   div.textContent = cell.adjMines || '';
-//                 }
-//                 if (cell.isExploded) {
-//                   div.className += ' mine';
-//                   div.textContent = '💥';
-//                 }
-//                 if (cell.isFlagged) {
-//                   div.className += ' flag';
-//                   div.textContent = '🚩';
-//                 }
+          function updateBoard(gameState) {
+            board.innerHTML = '';
+            gameState.board.forEach((row, y) => {
+              row.forEach((cell, x) => {
+                const div = document.createElement('div');
+                div.className = 'cell';
+                if (cell.isRevealed) {
+                  div.className += ' revealed';
+                  div.textContent = cell.adjMines || '';
+                }
+                if (cell.isExploded) {
+                  div.className += ' mine';
+                  div.textContent = '💥';
+                }
+                if (cell.isFlagged) {
+                  div.className += ' flag';
+                  div.textContent = '🚩';
+                }
 
-//                 div.addEventListener('click', () => {
-//                   socket.emit('click', { x, y });
-//                 });
-//                 div.addEventListener('contextmenu', (e) => {
-//                   e.preventDefault();
-//                   socket.emit('flag', { x, y });
-//                 });
-//                 board.appendChild(div);
-//               });
-//             });
-//             status.textContent = 'Game Status: ' + gameState.status;
-//           }
+                div.addEventListener('click', () => {
+                  socket.emit('click', { x, y });
+                });
+                div.addEventListener('contextmenu', (e) => {
+                  e.preventDefault();
+                  socket.emit('flag', { x, y });
+                });
+                board.appendChild(div);
+              });
+            });
+            status.textContent = 'Game Status: ' + gameState.status;
+          }
 
-//           socket.on('gameState', updateBoard);
-//           socket.on('connect', () => {
-//             console.log('Connected to server');
-//           });
-//         </script>
-//       </body>
-//     </html>
-//   `);
-// });
+          socket.on('gameState', updateBoard);
+          socket.on('connect', () => {
+            console.log('Connected to server');
+          });
+        </script>
+      </body>
+    </html>
+  `);
+});
