@@ -15,7 +15,7 @@ const io = new Server(server, {
 });
 
 // Game logic
-let game = new GameState({ width: 16, height: 16, mines: 40 });
+let game = new GameState({ width: 16, height: 16, mines: 10 });
 
 io.on("connection", (socket) => {
   console.log("player connected");
