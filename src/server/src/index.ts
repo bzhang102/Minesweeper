@@ -5,11 +5,12 @@ import http from "http";
 import { GameState } from "./game/GameState";
 import { Coord, BoardConfig } from "./types/gameTypes";
 
+const PORT = process.env.PORT || 3000; // Add this line
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
     methods: ["GET", "POST"],
   },
 });
@@ -43,6 +44,6 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(3000, () => {
-  console.log("Server running on port 3000");
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
