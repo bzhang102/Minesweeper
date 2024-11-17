@@ -6,6 +6,13 @@ import "./Board.css";
 
 const socket = io("https://minesweeper-server-o2fa.onrender.com");
 
+socket.on("connect", () => {
+  console.log("Connected to server!");
+});
+socket.on("connect_error", (error) => {
+  console.log("Connection error:", error);
+});
+
 export function Board() {
   const [gameState, setGameState] = useState<GameState>({
     board: [],
