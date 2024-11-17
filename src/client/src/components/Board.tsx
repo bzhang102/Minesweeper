@@ -4,20 +4,20 @@ import type { GameState, Coord } from "../types/game";
 import { Cell } from "./Cell";
 import "./Board.css";
 
-const socket = io("https://minesweeper-server-o2fa.onrender.com");
+/* const socket = io("https://minesweeper-server-o2fa.onrender.com"); */
+// const socket = io("http://localhost:3000");
 
-socket.on("connect", () => {
-  console.log("Connected to server!");
-});
-socket.on("connect_error", (error) => {
-  console.log("Connection error:", error);
-});
-
-export function Board() {
+export function Board({ username, socket }: { username: string; socket: any }) {
   const [gameState, setGameState] = useState<GameState>({
     board: [],
     status: 0,
     flagsLeft: 10,
+  });
+  socket.on("connect", () => {
+    console.log("Connected to server!");
+  });
+  socket.on("connect_error", (error: any) => {
+    console.log("Connection error:", error);
   });
 
   useEffect(() => {
@@ -44,6 +44,7 @@ export function Board() {
 
   return (
     <div className="board-container">
+      <h1>Hello {username}</h1>
       <div className="game-controls">
         <div className="flags-counter">🚩 {gameState.flagsLeft}</div>
         <button className="reset-button" onClick={handleReset}>
@@ -61,7 +62,7 @@ export function Board() {
               onLeftClick={handleLeftClick}
               onRightClick={handleRightClick}
             />
-          ))
+          )),
         )}
       </div>
 

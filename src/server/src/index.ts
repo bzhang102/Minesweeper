@@ -1,6 +1,7 @@
 // src/server/src/index.ts
 import express from "express";
 import { Server } from "socket.io";
+import { v4 as uuid } from "uuid";
 import http from "http";
 import { GameState } from "./game/GameState";
 import { Coord, BoardConfig } from "./types/gameTypes";
@@ -18,8 +19,13 @@ const io = new Server(server, {
 let config = { width: 16, height: 16, mines: 10 };
 let game = new GameState(config);
 
+const connections = {};
+const users = {};
+
 io.on("connection", (socket) => {
-  console.log("player connected");
+  const username = socket.handshake.query["username"];
+  const uuid = uuidv4();
+  console.log(`${username} connected`);
 
   // Send current game state to new player
   socket.emit("gameState", game.getGameState());
