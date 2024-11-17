@@ -1,4 +1,3 @@
-// src/server/src/game/GameState.ts
 import { BoardConfig, Coord, Cell } from "../types/gameTypes";
 
 enum GameStatus {
@@ -7,14 +6,42 @@ enum GameStatus {
   LOST,
 }
 
+type Direction = {
+  dx: number;
+  dy: number;
+};
+
 export class GameState {
-  private board: Cell[][];
+  private readonly board: Cell[][];
   private status: GameStatus = GameStatus.PLAYING;
   private firstClick = true;
+  private flagsLeft: number;
+  private readonly width: number;
+  private readonly height: number;
 
-  // init board
+  // Array of all possible directions for neighboring cells
+  private static readonly DIRECTIONS: Direction[] = [
+    { dx: -1, dy: -1 },
+    { dx: -1, dy: 0 },
+    { dx: -1, dy: 1 },
+    { dx: 0, dy: -1 },
+    { dx: 0, dy: 1 },
+    { dx: 1, dy: -1 },
+    { dx: 1, dy: 0 },
+    { dx: 1, dy: 1 },
+  ];
+
   public constructor(config: BoardConfig) {
-    this.board = Array(config.height)
+    this.width = config.width;
+    this.height = config.height;
+    this.flagsLeft = config.mines;
+    this.board = this.initializeBoard(config);
+    this.placeMines(config.mines);
+    this.calculateAdjacentMines();
+  }
+
+  private initializeBoard(config: BoardConfig): Cell[][] {
+    return Array(config.height)
       .fill(null)
       .map(() =>
         Array(config.width)
@@ -27,77 +54,108 @@ export class GameState {
             isFlagged: false,
           }))
       );
+  }
 
-    // place mines at random
+  private placeMines(mineCount: number): void {
     let minesPlaced = 0;
-    while (minesPlaced < config.mines) {
-      const x = Math.floor(Math.random() * config.width);
-      const y = Math.floor(Math.random() * config.height);
+    while (minesPlaced < mineCount) {
+      const x = Math.floor(Math.random() * this.width);
+      const y = Math.floor(Math.random() * this.height);
 
       if (!this.board[y][x].isMine) {
         this.board[y][x].isMine = true;
         minesPlaced++;
       }
     }
-
-    // count number of mines adjacent to each square
-    this.calculateAdjacentMines();
   }
 
-  // update board with a move
-  public click(move: Coord) {
-    // if game isn't in play return
-    if (this.status !== GameStatus.PLAYING) return false;
+  public click(move: Coord): boolean {
+    if (!this.isValidMove(move)) {
+      return false;
+    }
 
-    let cell = this.board[move.y][move.x];
+    const cell = this.board[move.y][move.x];
 
-    // allow for safe first clicks
+    if (cell.isFlagged || this.status !== GameStatus.PLAYING) {
+      return false;
+    }
+
     if (this.firstClick) {
-      if (cell.isMine) {
-        this.moveMine(move);
-      }
-      this.firstClick = false;
+      this.handleFirstClick(move);
     }
 
     if (cell.isMine) {
-      cell.isExploded = true;
-      this.status = GameStatus.LOST;
+      this.endGame(move);
       return false;
     }
+
     if (!cell.isRevealed) {
       this.explore(move);
+      if (this.checkWin()) {
+        this.status = GameStatus.WON;
+      }
+    } else if (cell.adjMines > 0) {
+      this.handleNumberClick(move);
     }
 
-    if (this.checkWin()) {
-      this.status = GameStatus.WON;
-    }
     return true;
   }
 
-  // update flags
-  public flag(coord: Coord) {
+  private isValidMove(coord: Coord): boolean {
+    return (
+      coord.x >= 0 &&
+      coord.x < this.width &&
+      coord.y >= 0 &&
+      coord.y < this.height
+    );
+  }
+
+  private handleFirstClick(move: Coord): void {
+    if (this.board[move.y][move.x].isMine) {
+      this.moveMine(move);
+    }
+    this.firstClick = false;
+  }
+
+  private endGame(move: Coord): void {
+    this.board[move.y][move.x].isExploded = true;
+    this.status = GameStatus.LOST;
+  }
+
+  public flag(coord: Coord): boolean {
+    if (!this.isValidMove(coord) || this.status !== GameStatus.PLAYING) {
+      return false;
+    }
+
     const cell = this.board[coord.y][coord.x];
-    if (!cell.isRevealed && this.status === GameStatus.PLAYING) {
-      cell.isFlagged = !cell.isFlagged;
+    if (cell.isRevealed) {
+      return false;
+    }
+
+    if (cell.isFlagged) {
+      cell.isFlagged = false;
+      this.flagsLeft++;
       return true;
     }
-    return false;
+
+    if (this.flagsLeft <= 0) {
+      return false;
+    }
+
+    cell.isFlagged = true;
+    this.flagsLeft--;
+    return true;
   }
 
   private checkWin(): boolean {
-    for (const row of this.board) {
-      for (const cell of row) {
-        if (!cell.isMine && !cell.isRevealed) {
-          return false;
-        }
-      }
-    }
-    return true;
+    return this.board.every((row) =>
+      row.every((cell) => cell.isMine || cell.isRevealed)
+    );
   }
 
-  private calculateAdjacentMines() {
-    for (let y = 0; y < this.board.length; y++) {
-      for (let x = 0; x < this.board[0].length; x++) {
+  private calculateAdjacentMines(): void {
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
         if (!this.board[y][x].isMine) {
           this.board[y][x].adjMines = this.getNeighboringMines({ x, y });
         }
@@ -105,96 +163,119 @@ export class GameState {
     }
   }
 
-  // helper to count adjacent mines
   private getNeighboringMines(coord: Coord): number {
-    let count = 0;
-    for (let dy = -1; dy <= 1; dy++) {
-      for (let dx = -1; dx <= 1; dx++) {
-        const newY = coord.y + dy;
-        const newX = coord.x + dx;
+    return GameState.DIRECTIONS.reduce((count, dir) => {
+      const newY = coord.y + dir.dy;
+      const newX = coord.x + dir.dx;
 
-        if (
-          newY >= 0 &&
-          newY < this.board.length &&
-          newX >= 0 &&
-          newX < this.board[0].length &&
-          this.board[newY][newX].isMine
-        ) {
-          count++;
-        }
+      if (
+        this.isValidMove({ x: newX, y: newY }) &&
+        this.board[newY][newX].isMine
+      ) {
+        count++;
       }
-    }
-    return count;
+      return count;
+    }, 0);
   }
 
-  // helper to help propogate a click on an empty square recursively
-  private explore(coord: Coord) {
-    // check bounds
-    if (
-      coord.x < 0 ||
-      coord.x >= this.board[0].length ||
-      coord.y < 0 ||
-      coord.y >= this.board.length
-    ) {
+  private handleNumberClick(coord: Coord): void {
+    const cell = this.board[coord.y][coord.x];
+    let flagCount = 0;
+    let surroundingCells: Coord[] = [];
+
+    // Count flags and collect unopened cells around the number
+    for (const dir of GameState.DIRECTIONS) {
+      const newX = coord.x + dir.dx;
+      const newY = coord.y + dir.dy;
+
+      if (!this.isValidMove({ x: newX, y: newY })) {
+        continue;
+      }
+
+      const adjacentCell = this.board[newY][newX];
+      if (adjacentCell.isFlagged) {
+        flagCount++;
+      } else if (!adjacentCell.isRevealed) {
+        surroundingCells.push({ x: newX, y: newY });
+      }
+    }
+
+    // If flags match the number, reveal all other surrounding cells
+    if (flagCount === cell.adjMines) {
+      for (const surroundingCoord of surroundingCells) {
+        const surroundingCell =
+          this.board[surroundingCoord.y][surroundingCoord.x];
+
+        // If we hit a mine, end the game
+        if (surroundingCell.isMine) {
+          surroundingCell.isExploded = true;
+          this.status = GameStatus.LOST;
+          return;
+        }
+
+        // Otherwise reveal the cell and its neighbors if needed
+        this.explore(surroundingCoord);
+      }
+
+      // Check for win after revealing cells
+      if (this.checkWin()) {
+        this.status = GameStatus.WON;
+      }
+    }
+  }
+
+  private explore(coord: Coord): void {
+    if (!this.isValidMove(coord)) {
       return;
     }
 
-    let cell = this.board[coord.y][coord.x];
-
-    // check to see if already explored
+    const cell = this.board[coord.y][coord.x];
     if (cell.isRevealed) {
       return;
     }
-    // reveal this cell
+
+    // If the cell was flagged, increment flagsLeft since we're removing the flag
+    if (cell.isFlagged) {
+      cell.isFlagged = false;
+      this.flagsLeft++;
+    }
+
     cell.isRevealed = true;
 
-    // recursively explore neighbors
-    if (cell.adjMines == 0) {
-      this.explore({ x: coord.x + 1, y: coord.y + 1 });
-      this.explore({ x: coord.x + 1, y: coord.y });
-      this.explore({ x: coord.x + 1, y: coord.y - 1 });
-      this.explore({ x: coord.x - 1, y: coord.y + 1 });
-      this.explore({ x: coord.x - 1, y: coord.y });
-      this.explore({ x: coord.x - 1, y: coord.y - 1 });
-      this.explore({ x: coord.x, y: coord.y + 1 });
-      this.explore({ x: coord.x, y: coord.y - 1 });
+    if (cell.adjMines === 0) {
+      GameState.DIRECTIONS.forEach((dir) => {
+        this.explore({
+          x: coord.x + dir.dx,
+          y: coord.y + dir.dy,
+        });
+      });
     }
   }
 
-  // helper to move mine on first click
-  private moveMine(move: Coord) {
+  private moveMine(move: Coord): void {
     this.board[move.y][move.x].isMine = false;
 
-    // Find first available non-mine spot
-    for (let y = 0; y < this.board.length; y++) {
-      for (let x = 0; x < this.board[0].length; x++) {
-        if (!this.board[y][x].isMine && (x !== move.x || y !== move.y)) {
-          this.board[y][x].isMine = true;
-          // recalculate mine counts
-          this.calculateAdjacentMines();
-          return;
+    const newSpot = this.findFirstAvailableSpot(move);
+    if (newSpot) {
+      this.board[newSpot.y][newSpot.x].isMine = true;
+      this.calculateAdjacentMines();
+    }
+  }
+
+  private findFirstAvailableSpot(excludeCoord: Coord): Coord | null {
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        if (
+          !this.board[y][x].isMine &&
+          (x !== excludeCoord.x || y !== excludeCoord.y)
+        ) {
+          return { x, y };
         }
       }
     }
+    return null;
   }
 
-  // for debugging
-  public debugPrint() {
-    for (const row of this.board) {
-      console.log(
-        row
-          .map((cell) => {
-            if (cell.isMine) return "M";
-            if (cell.isFlagged) return "F";
-            if (!cell.isRevealed) return ".";
-            return cell.adjMines.toString();
-          })
-          .join(" ")
-      );
-    }
-  }
-
-  // sends data to players
   public getGameState() {
     return {
       board: this.board.map((row) =>
@@ -202,13 +283,12 @@ export class GameState {
           isRevealed: cell.isRevealed,
           isExploded: cell.isExploded,
           isFlagged: cell.isFlagged,
-          // Only send adjMines if cell is revealed
           adjMines: cell.isRevealed ? cell.adjMines : null,
-          // Only show mine if game is over
           isMine: this.status !== GameStatus.PLAYING ? cell.isMine : null,
         }))
       ),
       status: this.status,
+      flagsLeft: this.flagsLeft,
     };
   }
 }

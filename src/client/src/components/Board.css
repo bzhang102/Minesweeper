@@ -6,16 +6,23 @@
 }
 
 .game-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
   margin-bottom: 16px;
 }
 
-.reset-button {
+.flags-counter, .reset-button {
   padding: 8px 16px;
   font-size: 14px;
+  font-weight: 500;
   color: white;
   background: #333;
   border: none;
-  cursor: pointer;
+  border-radius: 0;
+  height: 32px;   
+  line-height: 16px; 
+  box-sizing: border-box;  
 }
 
 .reset-button:hover {

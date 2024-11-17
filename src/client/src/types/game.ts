@@ -31,6 +31,7 @@ export enum GameStatus {
 export interface GameState {
   board: Cell[][];
   status: GameStatus;
+  flagsLeft: number;
 }
 
 // Socket event types

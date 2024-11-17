@@ -10,6 +10,7 @@ export function Board() {
   const [gameState, setGameState] = useState<GameState>({
     board: [],
     status: 0,
+    flagsLeft: 10,
   });
 
   useEffect(() => {
@@ -37,6 +38,7 @@ export function Board() {
   return (
     <div className="board-container">
       <div className="game-controls">
+        <div className="flags-counter">🚩 {gameState.flagsLeft}</div>
         <button className="reset-button" onClick={handleReset}>
           New Game
         </button>
