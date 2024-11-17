@@ -42,6 +42,15 @@
               if ! psql -lqt | cut -d \| -f 1 | grep -qw minesweeper_db; then
                 createdb minesweeper_db
                 echo "Created minesweeper_db database"
+                
+                # Apply schema.sql if it exists
+                if [ -f "$PWD/schema.sql" ]; then
+                  echo "Applying schema from schema.sql..."
+                  psql -d minesweeper_db -f "$PWD/schema.sql"
+                  echo "Schema applied successfully."
+                else
+                  echo "No schema.sql file found. Skipping schema setup."
+                fi
               fi
             fi
 
