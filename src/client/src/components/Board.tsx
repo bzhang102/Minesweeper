@@ -4,7 +4,7 @@ import type { GameState, Coord } from "../types/game";
 import { Cell } from "./Cell";
 import "./Board.css";
 
-const socket = io("http://localhost:3000");
+const socket = io("https://minesweeper-server-o2fa.onrender.com");
 
 export function Board() {
   const [gameState, setGameState] = useState<GameState>({
