@@ -9,9 +9,9 @@
   border: 1px solid #bbb;
   padding: 0;
   cursor: pointer;
-  border-radius: 0;  /* Ensure square corners */
-  -webkit-appearance: none;  /* Remove default button styling */
-  appearance: none;  /* Remove default button styling */
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .cell-hidden {
