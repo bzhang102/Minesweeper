@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
 import Login from './Login';
 import CreateAccount from './CreateAccount';
 import './App.css';
@@ -12,7 +12,10 @@ async function hashPassword(password) {
   return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
-function App() {
+// Create a wrapper component that has access to navigation
+function AppContent() {
+  const navigate = useNavigate();
+
   const handleLogin = async (username, password) => {
     try {
       const hashedPassword = await hashPassword(password);
@@ -56,12 +59,18 @@ function App() {
   };
 
   return (
+    <Routes>
+      <Route path="/login" element={<Login onLogin={handleLogin} />} />
+      <Route path="/create-account" element={<CreateAccount onCreateAccount={handleCreateAccount} />} />
+      <Route path="/dashboard" element={<h1>Welcome to the Game</h1>} />
+    </Routes>
+  );
+}
+
+function App() {
+  return (
     <Router>
-      <Routes>
-        <Route path="/login" element={<Login onLogin={handleLogin} />} />
-        <Route path="/create-account" element={<CreateAccount onCreateAccount={handleCreateAccount} />} />
-        <Route path="/dashboard" element={<h1>Welcome to the Game</h1>} />
-      </Routes>
+      <AppContent />
     </Router>
   );
 }
