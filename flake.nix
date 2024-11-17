@@ -17,7 +17,7 @@
           ];
           shellHook = ''
             echo "Hello Devs"
-
+            
             # Set up PostgreSQL environment variables
             export PGDATA="$PWD/src/server/.postgres"
             export DATABASE_URL="postgresql:///minesweeper_db"

@@ -46,5 +46,5 @@ Thumbs.db
 # Vite
 .vite/
 
-#postgress
-.postgres
+# Postgres
+.postgres/
