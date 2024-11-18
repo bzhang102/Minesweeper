@@ -4,10 +4,8 @@ import "./App.css";
 import { Login } from "./components/Login";
 import { io, Socket } from "socket.io-client";
 
-const SERVER_URL =
-  process.env.NODE_ENV === "production"
-    ? "https://minesweeper-server-o2fa.onrender.com"
-    : "http://localhost:3000";
+const SERVER_URL = "https://minesweeper-server-o2fa.onrender.com";
+// const SERVER_URL = "http://localhost:3000";
 
 function App() {
   const [username, setUsername] = useState("");
