@@ -26,7 +26,7 @@ function App() {
     return (
       <div className="app-container">
         <div className="game-container">
-          <h1 className="game-title">Co-Op Minesweeper</h1>
+          <h1 className="game-title">Co-op Minesweeper</h1>
           <Board username={username} socket={socket} />
         </div>
       </div>

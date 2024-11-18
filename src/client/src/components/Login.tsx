@@ -22,8 +22,8 @@ export function Login({ onSubmit }: LoginProps) {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h1>Welcome to Co-Op Minesweeper</h1>
-        <p>Enter your username to join the game</p>
+        <h1>Welcome to Co-op Minesweeper</h1>
+        <p>Enter a username to join a game</p>
 
         <form onSubmit={handleSubmit}>
           <input
