@@ -4,12 +4,8 @@ import { Socket, Server } from "socket.io";
 import { v4 as uuidv4 } from "uuid";
 import http from "http";
 import { GameState } from "./game/GameState";
-import { Coord, BoardConfig } from "./types/gameTypes";
-import { User } from "./types/serverTypes";
-
-interface Dictionary<T> {
-  [key: string]: T;
-}
+import { Coord } from "./types/gameTypes";
+import { User, Dictionary } from "./types/serverTypes";
 
 const PORT = process.env.PORT || 3000; // Add this line
 const app = express();
@@ -21,36 +17,48 @@ const io = new Server(server, {
   },
 });
 
+app.get("/", (req, res) => {
+  res.send({
+    status: "ok",
+    message: "Minesweeper server running",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 let config = { width: 16, height: 16, mines: 10 };
 let game = new GameState(config);
 
 const connections: Dictionary<Socket> = {};
 const users: Dictionary<User> = {};
 
-const handleMovement = (message: object, uuid: string, socket: Socket) => {
-  let user: User = users[uuid];
-  user.state = message;
+const handleMovement = (cursorPosition: User["state"], uuid: string) => {
+  users[uuid] = {
+    ...users[uuid],
+    state: cursorPosition,
+  };
   io.emit("users", users);
-  console.log(
-    `${user.username} updated their updated state: ${JSON.stringify(user.state)}`,
-  );
+  console.log(cursorPosition.x, cursorPosition.y);
 };
-const handleClose = (uuid: string, socket: Socket) => {
+
+const handleClose = (uuid: string) => {
   console.log(`Disconnecting ${users[uuid].username}`);
   delete connections[uuid];
   delete users[uuid];
   console.log(users);
-  socket.broadcast.emit("users", users);
+  io.emit("users", users);
 };
 
 io.on("connection", (socket) => {
-  const username = socket.handshake.query["username"];
+  const username = String(socket.handshake.query["username"]);
   const uuid: string = uuidv4();
   console.log(`${username} connected with uuid ${uuid}`);
   connections[uuid] = socket;
   users[uuid] = {
     username,
-    state: {},
+    state: {
+      x: -30,
+      y: -30,
+    },
   };
 
   console.log(users);
@@ -58,10 +66,13 @@ io.on("connection", (socket) => {
   // Send current game state to new player
   socket.emit("gameState", game.getGameState());
 
-  socket.on("cursor_movement", (message) =>
-    handleMovement(message, uuid, socket),
+  // Handle cursor movement
+  socket.on("cursor_movement", (cursorPosition: User["state"]) =>
+    handleMovement(cursorPosition, uuid)
   );
-  socket.on("disconnect", () => handleClose(uuid, socket));
+
+  // Handle disconnect
+  socket.on("disconnect", () => handleClose(uuid));
 
   // Handle left clicks
   socket.on("click", (move: Coord) => {
