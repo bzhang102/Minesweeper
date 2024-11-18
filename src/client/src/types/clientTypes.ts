@@ -44,3 +44,32 @@ export interface ClientToServerEvents {
   flag: (coord: Coord) => void;
   reset: () => void;
 }
+
+// Cursor types
+export interface CursorProps {
+  point: number[];
+}
+
+export interface CursorPath {
+  shadow: string[];
+  base: string[];
+  accent: string[];
+}
+
+// Board Types
+export interface BoardProps {
+  username: string;
+  socket: any;
+}
+
+export interface User {
+  username: string;
+  state: {
+    x: number;
+    y: number;
+  };
+}
+
+export interface Users {
+  [key: string]: User;
+}

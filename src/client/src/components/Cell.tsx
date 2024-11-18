@@ -1,4 +1,4 @@
-import type { Cell as CellType, Coord } from "../types/game";
+import type { Cell as CellType, Coord } from "../types/clientTypes";
 import "./Cell.css";
 
 interface CellProps {

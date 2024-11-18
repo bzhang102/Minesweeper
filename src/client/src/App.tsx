@@ -4,14 +4,18 @@ import "./App.css";
 import { Login } from "./components/Login";
 import { io, Socket } from "socket.io-client";
 
+const SERVER_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://minesweeper-server-o2fa.onrender.com"
+    : "http://localhost:3000";
+
 function App() {
   const [username, setUsername] = useState("");
   const [socket, setSocket] = useState<Socket | null>(null);
   useEffect(() => {
     if (username) {
-      const newSocket = io(`http://localhost:3000?username=${username}`);
+      const newSocket = io(`${SERVER_URL}?username=${username}`);
       setSocket(newSocket);
-
       return () => {
         newSocket.disconnect();
       };
