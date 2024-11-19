@@ -20,6 +20,7 @@
           packages = with pkgs; [
             nodejs
             postgresql
+            tmux
           ];
           shellHook = ''
             echo "Hello Devs"
@@ -63,8 +64,14 @@
 
             echo "PostgreSQL is running with database: minesweeper_db"
 
+            # Start tmux session with npm run dev in client and server
+            tmux new-session -d -s minesweeper
+            tmux send-keys -t minesweeper 'cd src/client && npm run dev' C-m
+            tmux split-window -h
+            tmux send-keys -t minesweeper 'cd src/server && npm run dev' C-m
+
             # Clean up PostgreSQL on exit
-            trap "pg_ctl -D $PGDATA stop" EXIT
+            trap "pg_ctl -D $PGDATA stop;pkill tmux:\ server" EXIT
           '';
         };
       }
