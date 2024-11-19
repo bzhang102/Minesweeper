@@ -38,7 +38,6 @@ const handleMovement = (cursorPosition: User["state"], uuid: string) => {
     state: cursorPosition,
   };
   io.emit("users", users);
-  console.log(cursorPosition.x, cursorPosition.y);
 };
 
 const handleClose = (uuid: string) => {
