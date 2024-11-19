@@ -8,7 +8,7 @@ import "./Board.css";
 const INITIAL_GAME_STATE: GameState = {
   board: [],
   status: 0,
-  flagsLeft: 20,
+  flagsLeft: 40,
 };
 
 const THROTTLE_MS = 50;

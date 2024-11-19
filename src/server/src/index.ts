@@ -26,7 +26,7 @@ app.get("/", (req, res) => {
   });
 });
 
-let config = { width: 16, height: 16, mines: 10 };
+let config = { width: 16, height: 16, mines: 40 };
 let game = new GameState(config);
 
 const connections: Dictionary<Socket> = {};
