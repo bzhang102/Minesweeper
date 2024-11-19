@@ -1,4 +1,5 @@
 export interface User {
+  uuid: string;
   username: string;
   state: {
     x: number;

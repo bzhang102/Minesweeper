@@ -12,8 +12,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    // origin: "http://localhost:5173",
-    origin: "https://coopminesweeper.netlify.app",
+    origin: "http://localhost:5173",
+    // origin: "https://coopminesweeper.netlify.app",
     methods: ["GET", "POST"],
   },
 });
@@ -26,7 +26,7 @@ app.get("/", (req, res) => {
   });
 });
 
-let config = { width: 16, height: 16, mines: 10 };
+let config = { width: 16, height: 16, mines: 40 };
 let game = new GameState(config);
 
 const connections: Dictionary<Socket> = {};
@@ -37,8 +37,8 @@ const handleMovement = (cursorPosition: User["state"], uuid: string) => {
     ...users[uuid],
     state: cursorPosition,
   };
+
   io.emit("users", users);
-  console.log(cursorPosition.x, cursorPosition.y);
 };
 
 const handleClose = (uuid: string) => {
@@ -56,6 +56,7 @@ io.on("connection", (socket) => {
   connections[uuid] = socket;
   users[uuid] = {
     username,
+    uuid,
     state: {
       x: -30,
       y: -30,
@@ -66,11 +67,13 @@ io.on("connection", (socket) => {
 
   // Send current game state to new player
   socket.emit("gameState", game.getGameState());
+  // Send UUID of current player to client
+  socket.emit("uuid", uuid);
 
   // Handle cursor movement
-  socket.on("cursor_movement", (cursorPosition: User["state"]) =>
-    handleMovement(cursorPosition, uuid)
-  );
+  socket.on("cursor_movement", (cursorPosition: User["state"]) => {
+    handleMovement(cursorPosition, uuid);
+  });
 
   // Handle disconnect
   socket.on("disconnect", () => handleClose(uuid));

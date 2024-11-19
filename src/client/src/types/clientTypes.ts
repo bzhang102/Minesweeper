@@ -64,6 +64,7 @@ export interface BoardProps {
 
 export interface User {
   username: string;
+  uuid: string;
   state: {
     x: number;
     y: number;

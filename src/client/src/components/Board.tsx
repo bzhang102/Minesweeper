@@ -8,19 +8,24 @@ import "./Board.css";
 const INITIAL_GAME_STATE: GameState = {
   board: [],
   status: 0,
-  flagsLeft: 20,
+  flagsLeft: 40,
 };
 
 const THROTTLE_MS = 50;
 
 export function Board({ username, socket }: BoardProps) {
   const [users, setUsers] = useState<Users>({});
+  const [uuid, setUUID] = useState<String>("");
   const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE);
   const boardRef = useRef<HTMLDivElement>(null);
 
   // Socket event handlers
   const handleGameState = useCallback((newState: GameState) => {
     setGameState(newState);
+  }, []);
+
+  const handleUUID = useCallback((newUUID: String) => {
+    setUUID(newUUID);
   }, []);
 
   const handleUsersUpdate = useCallback((newUserData: Users) => {
@@ -31,9 +36,9 @@ export function Board({ username, socket }: BoardProps) {
   const updatePositionThrottled = useRef(
     throttle(
       (position: object) => socket.emit("cursor_movement", position),
-      THROTTLE_MS
-    )
-  ).current;
+      THROTTLE_MS,
+    ),
+  );
 
   // Mouse movement handler
   const handleMouseMove = useCallback(
@@ -44,12 +49,12 @@ export function Board({ username, socket }: BoardProps) {
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      updatePositionThrottled({
+      updatePositionThrottled.current({
         x,
         y,
       });
     },
-    [updatePositionThrottled]
+    [updatePositionThrottled],
   );
 
   // Game action handlers
@@ -57,14 +62,14 @@ export function Board({ username, socket }: BoardProps) {
     (coord: Coord) => {
       socket.emit("click", coord);
     },
-    [socket]
+    [socket],
   );
 
   const handleRightClick = useCallback(
     (coord: Coord) => {
       socket.emit("flag", coord);
     },
-    [socket]
+    [socket],
   );
 
   const handleReset = useCallback(() => {
@@ -75,7 +80,7 @@ export function Board({ username, socket }: BoardProps) {
   useEffect(() => {
     socket.on("connect", () => console.log("Connected to server!"));
     socket.on("connect_error", (error: any) =>
-      console.log("Connection error:", error)
+      console.log("Connection error:", error),
     );
 
     return () => {
@@ -88,12 +93,14 @@ export function Board({ username, socket }: BoardProps) {
   useEffect(() => {
     socket.on("gameState", handleGameState);
     socket.on("users", handleUsersUpdate);
+    socket.on("uuid", handleUUID);
 
     return () => {
       socket.off("gameState");
       socket.off("users");
+      socket.off("uuid");
     };
-  }, [socket, handleGameState, handleUsersUpdate]);
+  }, [socket, handleUUID, handleGameState, handleUsersUpdate]);
 
   // Mouse movement setup - now using window event listener
   useEffect(() => {
@@ -105,9 +112,9 @@ export function Board({ username, socket }: BoardProps) {
 
   // Render cursors for other users
   const renderCursors = useCallback(() => {
-    return Object.entries(users).map(([uuid, user]) => {
-      if (user.username === username) return null;
-      return <Cursor key={uuid} point={[user.state.x, user.state.y]} />;
+    return Object.entries(users).map(([user_uuid, user]) => {
+      if (user.uuid === uuid) return null;
+      return <Cursor key={user_uuid} point={[user.state.x, user.state.y]} />;
     });
   }, [users, username]);
 
@@ -130,7 +137,7 @@ export function Board({ username, socket }: BoardProps) {
               onLeftClick={handleLeftClick}
               onRightClick={handleRightClick}
             />
-          ))
+          )),
         )}
 
         {gameState.status !== 0 && (
