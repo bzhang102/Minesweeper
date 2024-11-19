@@ -1,0 +1,16 @@
+.cursor {
+  pointer-events: none;
+  will-change: transform;
+}
+
+.cursor-shadow {
+  fill: rgba(0, 0, 0, 0.2);
+}
+
+.cursor-base {
+  fill: white;
+}
+
+.cursor-accent {
+  fill: red;
+}
