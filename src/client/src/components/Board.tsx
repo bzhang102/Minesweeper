@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { throttle } from "lodash";
 import { Cursor } from "./Cursor";
 import { Cell } from "./Cell";
 import { GameState, Coord, BoardProps, Users } from "../types/clientTypes";
@@ -11,7 +10,27 @@ const INITIAL_GAME_STATE: GameState = {
   flagsLeft: 40,
 };
 
-const THROTTLE_MS = 50;
+const THROTTLE_MS = 5;
+
+const throttle = (fn: Function, throttle: number) => {
+  let lastTime = 0;
+  return (...args: any[]) => {
+    const now = new Date().getTime();
+    if (now - lastTime < throttle) return;
+    lastTime = now;
+    fn(...args);
+  };
+};
+
+const debounce = (fn: Function, delay: number) => {
+  let id: any;
+  return (...args: any[]) => {
+    if (id) clearTimeout(id);
+    id = setTimeout(() => {
+      fn(...args);
+    }, delay);
+  };
+};
 
 export function Board({ username, socket }: BoardProps) {
   const [users, setUsers] = useState<Users>({});

@@ -27,32 +27,46 @@ app.get("/", (req, res) => {
 });
 
 let config = { width: 24, height: 16, mines: 70 };
-let game = new GameState(config);
 
+// Hold game states across all rooms.
+// The room ID will be the game's key.
+const gameStore: Dictionary<GameState> = {};
 const connections: Dictionary<Socket> = {};
 const users: Dictionary<User> = {};
 
-const handleMovement = (cursorPosition: User["state"], uuid: string) => {
+// Whenever a new room is created, create a game instance for players in that room
+io.of("/").adapter.on("create-room", (room) => {
+  gameStore[room] = new GameState(config);
+});
+
+const handleMovement = (
+  cursorPosition: User["state"],
+  uuid: string,
+  room: string,
+) => {
   users[uuid] = {
     ...users[uuid],
     state: cursorPosition,
   };
 
-  io.emit("users", users);
+  io.to(room).emit("users", users);
 };
 
-const handleClose = (uuid: string) => {
+const handleClose = (uuid: string, room: string) => {
   console.log(`Disconnecting ${users[uuid].username}`);
   delete connections[uuid];
   delete users[uuid];
   console.log(users);
-  io.emit("users", users);
+  io.to(room).emit("users", users);
 };
 
 io.on("connection", (socket) => {
   const username = String(socket.handshake.query["username"]);
+  const room = String(socket.handshake.query["room"]);
   const uuid: string = uuidv4();
-  console.log(`${username} connected with uuid ${uuid}`);
+  let game = gameStore[room];
+
+  console.log(`${username} connected with uuid ${uuid} to room ${room}`);
   connections[uuid] = socket;
   users[uuid] = {
     username,
@@ -66,35 +80,36 @@ io.on("connection", (socket) => {
   console.log(users);
 
   // Send current game state to new player
-  socket.emit("gameState", game.getGameState());
+  socket.to(room).emit("gameState", game.getGameState());
   // Send UUID of current player to client
-  socket.emit("uuid", uuid);
+  socket.to(room).emit("uuid", uuid);
 
   // Handle cursor movement
   socket.on("cursor_movement", (cursorPosition: User["state"]) => {
-    handleMovement(cursorPosition, uuid);
+    handleMovement(cursorPosition, uuid, room);
   });
 
   // Handle disconnect
-  socket.on("disconnect", () => handleClose(uuid));
+  socket.on("disconnect", () => handleClose(uuid, room));
 
   // Handle left clicks
   socket.on("click", (move: Coord) => {
     game.click(move);
     // Broadcast new state to all players
-    io.emit("gameState", game.getGameState());
+    io.to(room).emit("gameState", game.getGameState());
   });
 
   // Handle right clicks (flags)
   socket.on("flag", (move: Coord) => {
     game.flag(move);
     // Broadcast new state to all players
-    io.emit("gameState", game.getGameState());
+    io.to(room).emit("gameState", game.getGameState());
   });
 
   socket.on("reset", () => {
-    game = new GameState(config);
-    io.emit("gameState", game.getGameState());
+    gameStore[room] = new GameState(config);
+    game = gameStore[room];
+    io.to(room).emit("gameState", game.getGameState());
   });
 });
 
