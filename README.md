@@ -11,10 +11,9 @@ A real-time cooperative Minesweeper game where multiple players can work togethe
 
 ## Technology Stack
 
-- **Backend**: Node.js
-- **Frontend**: React
+- **Backend**: Node.js, hosted on Render
+- **Frontend**: React, hosted on Netlify
 - **WebSockets**: Socket.io
-- **Hosting**: DigitalOcean
 - **Development**: Nix for reproducible environments
 
 ## Development Setup

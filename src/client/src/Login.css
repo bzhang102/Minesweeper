@@ -10,74 +10,74 @@
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
     border-radius: 15px;
     padding: 30px 20px;
-  }
+}
   
-  .header {
+.header {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 9px;
     width: 100%;
     margin-top: 30px;
-  }
+}
   
-  .text {
-    color: #fff;
+.text {
+    color: #333; /* Darker text color */
     font-size: 48px;
     font-weight: 700;
-  }
+}
   
-  .underline {
+.underline {
     width: 61px;
     height: 6px;
-    background: #fff;
+    background: #333; /* Darker underline */
     border-radius: 9px;
-  }
+}
   
-  .input {
+.input {
     margin-top: 40px;
     display: flex;
     flex-direction: column;
     gap: 25px;
-  }
+}
   
-  .input input {
+.input input {
     display: flex;
     align-items: center;
     margin: auto;
     width: 480px;
     height: 50px;
     background: rgba(255, 255, 255, 0.07);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid #333; /* Darker border color */
     border-radius: 6px;
     padding: 0 15px;
     font-size: 19px;
-    color: #fff;
-  }
+    color: #333; /* Darker input text */
+}
   
-  .input input::placeholder {
-    color: rgba(255, 255, 255, 0.7);
-  }
+.input input::placeholder {
+    color: rgba(51, 51, 51, 0.7); /* Darker placeholder */
+}
   
-  .input input:focus {
+.input input:focus {
     outline: none;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-  }
+    border: 1px solid #555; /* Slightly darker focus border */
+}
   
-  .submit-container {
+.submit-container {
     display: flex; /* Use flexbox for alignment */
     justify-content: center; /* Center horizontally */
     align-items: center; /* Center vertically */
     margin-top: 20px; /* Add some spacing from the inputs */
-  }
+}
   
-  .submit {
+.submit {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 220px;
     height: 59px;
-    color: #fff;
+    color: #333; /* Darker text on the button */
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 50px;
@@ -85,65 +85,83 @@
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
-  }
+}
   
-  .submit:hover {
+.submit:hover {
     background: rgba(255, 255, 255, 0.2);
-  }
+}
 
 /* Disabled button styling */
 .submit:disabled {
   background-color: #ccc; /* Light gray for disabled state */
   cursor: not-allowed;
 }
-  
-  /* Add to App.css or make sure body has this background */
-  body {
+
+/* Add to App.css or make sure body has this background */
+body {
     background: linear-gradient(135deg, #1e3c72, #2a5298);
     margin: 0;
     min-height: 100vh;
-  }
+}
   
-  @media (max-width: 650px) {
+@media (max-width: 650px) {
     .container {
-      width: 90%;
-      padding: 20px;
+        width: 90%;
+        padding: 20px;
     }
   
     .input input {
-      width: 90%;
+        width: 90%;
     }
   
     .submit-container {
-      flex-direction: column;
-      align-items: center;
+        flex-direction: column;
+        align-items: center;
     }
-  }
+}
 
-  .error-message {
+.error-message {
     color: #ff3333;
     text-align: center;
     margin-bottom: 1rem;
     font-size: 0.9rem;
-  }
+}
   
-  input:disabled,
-  button:disabled {
+input:disabled,
+button:disabled {
     opacity: 0.7;
     cursor: not-allowed;
-  }
+}
 
-  .switch-page {
+.switch-page {
     margin-top: 10px;
     text-align: center;
-  }
+}
   
-  .switch-page a {
-    color: #007BFF;
+.switch-page a {
+    color: #333; /* Darker color for the link */
     text-decoration: none;
     font-weight: bold;
-  }
+}
   
-  .switch-page a:hover {
+.switch-page a:hover {
     text-decoration: underline;
-  }
+}
+
+.submit {
+    /* ... existing properties ... */
+    border: 1px solid #333; /* Changed from rgba(255, 255, 255, 0.2) to a darker color */
+    /* ... rest of the properties ... */
+}
+
+.switch-page {
+    margin-top: 20px; /* Added more top margin for better spacing */
+    text-align: center;
+    color: #333; /* Added darker text color */
+}
+
+.switch-page a {
+    color: #333; /* Changed link color to match */
+    text-decoration: none;
+    font-weight: bold;
+}
