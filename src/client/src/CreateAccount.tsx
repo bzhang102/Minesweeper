@@ -1,21 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, FormEvent } from 'react';
 import './Login.css';
 
-const Login = ({ onLogin }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+interface CreateAccountProps {
+  onCreateAccount: (username: string, password: string) => Promise<void>;
+}
 
-  const handleSubmit = async (e) => {
+const CreateAccount: React.FC<CreateAccountProps> = ({ onCreateAccount }) => {
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
     
     try {
-      await onLogin(username, password);
+      await onCreateAccount(username, password);
     } catch (error) {
-      setError('Login failed. Please try again.');
+      setError('Account creation failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -24,7 +28,7 @@ const Login = ({ onLogin }) => {
   return (
     <div className='container'>
       <div className='header'>
-        <div className="text">Login</div>
+        <div className="text">Create Account</div>
         <div className="underline"></div>
       </div>
       <form onSubmit={handleSubmit}>
@@ -34,7 +38,7 @@ const Login = ({ onLogin }) => {
             type='text'
             placeholder='User name'
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
             disabled={isLoading}
           />
         </div>
@@ -43,7 +47,7 @@ const Login = ({ onLogin }) => {
             type='password'
             placeholder='Password'
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
             disabled={isLoading}
           />
         </div>
@@ -53,15 +57,15 @@ const Login = ({ onLogin }) => {
             className="submit"
             disabled={isLoading}
           >
-            {isLoading ? 'Logging in...' : 'Login'}
+            {isLoading ? 'Creating account...' : 'Create Account'}
           </button>
         </div>
       </form>
       <div className="switch-page">
-      Don't have an account? <a href="/create-account">Create Account</a>
+        Already have an account? <a href="/login">Login</a>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default CreateAccount;

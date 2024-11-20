@@ -1,21 +1,26 @@
-import React, { useState } from 'react';
+// Login.tsx
+import React, { useState, FormEvent } from 'react';
 import './Login.css';
 
-const CreateAccount = ({ onCreateAccount }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+interface LoginProps {
+  onLogin: (username: string, password: string) => Promise<void>;
+}
 
-  const handleSubmit = async (e) => {
+const Login: React.FC<LoginProps> = ({ onLogin }) => {
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
     
     try {
-      await onCreateAccount(username, password);
+      await onLogin(username, password);
     } catch (error) {
-      setError('Account creation failed. Please try again.');
+      setError('Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -24,7 +29,7 @@ const CreateAccount = ({ onCreateAccount }) => {
   return (
     <div className='container'>
       <div className='header'>
-        <div className="text">Create Account</div>
+        <div className="text">Login</div>
         <div className="underline"></div>
       </div>
       <form onSubmit={handleSubmit}>
@@ -53,15 +58,15 @@ const CreateAccount = ({ onCreateAccount }) => {
             className="submit"
             disabled={isLoading}
           >
-            {isLoading ? 'Creating account...' : 'Create Account'}
+            {isLoading ? 'Logging in...' : 'Login'}
           </button>
         </div>
       </form>
       <div className="switch-page">
-        Already have an account? <a href="/login">Login</a>
+        Don't have an account? <a href="/create-account">Create Account</a>
       </div>
     </div>
   );
 };
 
-export default CreateAccount;
+export default Login;

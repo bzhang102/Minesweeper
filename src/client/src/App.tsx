@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
+import { io, Socket } from "socket.io-client";
 import Login from './Login';
 import CreateAccount from './CreateAccount';
+import { Board } from "./components/Board";
 import './App.css';
 
-async function hashPassword(password) {
+const SERVER_URL = "https://minesweeper-server-o2fa.onrender.com";
+
+async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(password);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -12,11 +16,46 @@ async function hashPassword(password) {
   return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
-// Create a wrapper component that has access to navigation
-function AppContent() {
-  const navigate = useNavigate();
+interface LoginResponse {
+  ok: boolean;
+  username?: string;
+  [key: string]: any;
+}
 
-  const handleLogin = async (username, password) => {
+interface DashboardProps {
+  username: string;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ username }) => {
+  const [socket, setSocket] = useState<Socket | null>(null);
+
+  useEffect(() => {
+    const newSocket = io(`${SERVER_URL}?username=${username}`);
+    setSocket(newSocket);
+    return () => {
+      newSocket.disconnect();
+    };
+  }, [username]);
+
+  if (!socket) {
+    return <div>Connecting to game server...</div>;
+  }
+
+  return (
+    <div className="app-container">
+      <div className="game-container">
+        <h1 className="game-title">Co-op Minesweeper</h1>
+        <Board username={username} socket={socket} />
+      </div>
+    </div>
+  );
+};
+
+function AppContent(): JSX.Element {
+  const navigate = useNavigate();
+  const [authenticatedUser, setAuthenticatedUser] = useState<string | null>(null);
+
+  const handleLogin = async (username: string, password: string): Promise<void> => {
     try {
       const hashedPassword = await hashPassword(password);
       const response = await fetch('http://localhost:3000/login', {
@@ -25,10 +64,11 @@ function AppContent() {
         body: JSON.stringify({ username, password: hashedPassword }),
       });
 
-      const data = await response.json();
+      const data: LoginResponse = await response.json();
       if (data.ok) {
         console.log('Login successful:', data);
-        navigate('/dashboard'); // Redirect to the dashboard
+        setAuthenticatedUser(username);
+        navigate('/dashboard');
       } else {
         console.error('Login failed:', data);
       }
@@ -37,7 +77,7 @@ function AppContent() {
     }
   };
 
-  const handleCreateAccount = async (username, password) => {
+  const handleCreateAccount = async (username: string, password: string): Promise<void> => {
     try {
       const hashedPassword = await hashPassword(password);
       const response = await fetch('http://localhost:3000/create-account', {
@@ -46,10 +86,11 @@ function AppContent() {
         body: JSON.stringify({ username, password: hashedPassword }),
       });
 
-      const data = await response.json();
+      const data: LoginResponse = await response.json();
       if (data.ok) {
         console.log('Account created successfully:', data);
-        navigate('/dashboard'); // Redirect to the dashboard
+        setAuthenticatedUser(username);
+        navigate('/dashboard');
       } else {
         console.error('Account creation failed:', data);
       }
@@ -62,12 +103,20 @@ function AppContent() {
     <Routes>
       <Route path="/login" element={<Login onLogin={handleLogin} />} />
       <Route path="/create-account" element={<CreateAccount onCreateAccount={handleCreateAccount} />} />
-      <Route path="/dashboard" element={<h1>Welcome to the Game</h1>} />
+      <Route 
+        path="/dashboard" 
+        element={
+          authenticatedUser ? 
+            <Dashboard username={authenticatedUser} /> : 
+            <Login onLogin={handleLogin} />
+        } 
+      />
+      <Route path="/" element={<Login onLogin={handleLogin} />} />
     </Routes>
   );
 }
 
-function App() {
+function App(): JSX.Element {
   return (
     <Router>
       <AppContent />
