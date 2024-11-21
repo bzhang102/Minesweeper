@@ -32,6 +32,8 @@ let config = { width: 24, height: 16, mines: 70 };
 // The room ID will be the game's key.
 const gameStore: Dictionary<LobbyState> = {};
 // Whenever a new room is created, create a game instance for players in that room
+// HACK Note this function leaks memory, as every instance created will create a second game state which is represented by the user connection.
+// TODO Find a way to systematically delete rooms which don't have any users, without deleting games that just got initialized.
 io.of("/").adapter.on("create-room", (room) => {
   console.log(`room ${room} was created`);
   gameStore[room] = {
@@ -67,6 +69,8 @@ io.on("connection", (socket) => {
   const room = String(socket.handshake.query["room"]);
   const uuid: string = uuidv4();
 
+  console.log(`Creating Room ${room}`);
+
   socket.join(room);
 
   let game = gameStore[room].board;
@@ -83,6 +87,7 @@ io.on("connection", (socket) => {
     },
   };
 
+  console.log(gameStore);
   console.log(gameStore[room].users);
 
   // Send current game state to new player

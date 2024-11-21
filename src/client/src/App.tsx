@@ -13,7 +13,7 @@ function App() {
   const [socket, setSocket] = useState<Socket | null>(null);
   useEffect(() => {
     if (username) {
-      const newSocket = io(`${SERVER_URL}?username=${username}&room=12345`);
+      const newSocket = io(`${SERVER_URL}?username=${username}&room=1234`);
       newSocket.on("uuid", (uuid) => setUUID(uuid));
       setSocket(newSocket);
 
