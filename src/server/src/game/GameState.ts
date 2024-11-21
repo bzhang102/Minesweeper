@@ -13,8 +13,15 @@ type Direction = {
   dy: number;
 };
 
+type GameSettings = {
+  width: number;
+  height: number;
+  mines: number;
+};
+
 export type LobbyState = {
   board: GameState;
+  config: GameSettings;
   connections: Dictionary<Socket>;
   users: Dictionary<User>;
 };

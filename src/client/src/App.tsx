@@ -28,6 +28,7 @@ function App() {
       <div className="app-container">
         <div className="game-container">
           <h1 className="game-title">Co-op Minesweeper</h1>
+          <h1>Room: {room}</h1>
           <Board socket={socket} uuid={uuid} />
         </div>
       </div>

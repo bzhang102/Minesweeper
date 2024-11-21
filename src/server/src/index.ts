@@ -34,7 +34,7 @@ app.get("/", (req, res) => {
   });
 });
 
-let config = { width: 24, height: 16, mines: 70 };
+// let config = { width: 24, height: 16, mines: 70 };
 
 const isFourDigits = (room: string) => {
   return /^\d{4}$/.test(room);
@@ -51,16 +51,36 @@ app.post("/check-lobbies", (req, res) => {
 });
 
 // Whenever a new room is created, create a game instance for players in that room
-io.of("/").adapter.on("create-room", (room) => {
-  // Prevent rooms created when a browser connects to the server to create game instances
-  if (!isFourDigits(room)) return;
+// TODO Rewrite gamestore generation code to be a post request endpoint
+// instead so it can receive game difficulty settings
+app.post("/create-lobby", (req, res) => {
+  const { gameConfig, room } = req.body;
+  console.log(req.body);
+  console.log(`Creating Room ${room}`);
   gameStore[room] = {
-    board: new GameState(config),
+    board: new GameState(gameConfig),
+    config: gameConfig,
     users: {},
     connections: {},
   };
   lobbies.add(room);
+  res.send({
+    status: "ok",
+    message: "Minesweeper lobby generated",
+    timestamp: new Date().toISOString(),
+  });
 });
+
+// io.of("/").adapter.on("create-room", (room) => {
+//   // Prevent rooms created when a browser connects to the server to create game instances
+//   if (!isFourDigits(room)) return;
+//   gameStore[room] = {
+//     board: new GameState(config),
+//     users: {},
+//     connections: {},
+//   };
+//   lobbies.add(room);
+// });
 
 const handleMovement = (
   cursorPosition: User["state"],
@@ -86,8 +106,6 @@ const handleClose = (uuid: string, room: string) => {
 io.on("connection", (socket) => {
   const room = String(socket.handshake.query["room"]);
   const uuid: string = uuidv4();
-
-  console.log(`Creating Room ${room}`);
 
   socket.join(room);
 
@@ -138,7 +156,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("reset", () => {
-    gameStore[room].board = new GameState(config);
+    gameStore[room].board = new GameState(gameStore[room].config);
     game = gameStore[room].board;
     io.to(room).emit("gameState", game.getGameState());
   });
