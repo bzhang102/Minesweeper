@@ -4,8 +4,8 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: rgba(255, 255, 255, 0.95); /* Increased text opacity for better visibility */
+  background-color: #1a1a1a; /* Slightly darker background for better contrast */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -14,12 +14,12 @@
 }
 
 a {
-  font-weight: 500;
-  color: #646cff;
+  font-weight: 600; /* Increased font weight */
+  color: #7c82ff; /* Brighter link color */
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: #666eff; /* Adjusted hover color */
 }
 
 body {
@@ -28,41 +28,54 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background: linear-gradient(135deg, #1a2980, #26d0ce); /* Added gradient background */
 }
 
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+  font-weight: 700; /* Increased font weight */
+  color: #ffffff; /* Full white for headers */
 }
 
 button {
   border-radius: 8px;
-  border: 1px solid transparent;
+  border: 2px solid rgba(255, 255, 255, 0.2); /* More visible border */
   padding: 0.6em 1.2em;
   font-size: 1em;
-  font-weight: 500;
+  font-weight: 600; /* Increased font weight */
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent background */
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.25s ease;
+  color: #ffffff; /* Ensuring button text is white */
 }
+
 button:hover {
-  border-color: #646cff;
+  border-color: #7c82ff; /* Brighter border color on hover */
+  background-color: rgba(255, 255, 255, 0.2); /* Slightly lighter background on hover */
 }
+
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 4px auto #7c82ff; /* Matching focus ring color with theme */
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
+    color: #1a1a1a; /* Darker text for better contrast */
     background-color: #ffffff;
   }
   a:hover {
-    color: #747bff;
+    color: #5258cc; /* Darker hover color for light mode */
   }
   button {
-    background-color: #f9f9f9;
+    background-color: #f0f0f0; /* Slightly darker button background */
+    border-color: #d0d0d0; /* Visible border in light mode */
+    color: #1a1a1a; /* Dark text on buttons in light mode */
+  }
+  button:hover {
+    background-color: #e5e5e5;
+    border-color: #5258cc;
   }
 }
