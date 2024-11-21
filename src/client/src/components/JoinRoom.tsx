@@ -1,16 +1,15 @@
-import { useState, useEffect, FormEvent, ChangeEvent } from "react";
+import { useState, FormEvent, ChangeEvent } from "react";
 
 interface JoinRoomProps {
   setRoom: (room: string) => void;
 }
 
-// TODO prevent user from joining room that isn't established
-
 export function JoinRoom({ setRoom }: JoinRoomProps) {
   const [roomID, setRoomID] = useState("");
   const [validRoomID, setValidRoomId] = useState(false);
 
-  function checkLobbies(str: string) {
+  async function checkLobbies(str: string) {
+    //TODO change this localhost url with the deployed server url
     return fetch("http://localhost:3000/check-lobbies", {
       method: "POST",
       headers: {
