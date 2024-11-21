@@ -1,5 +1,6 @@
 // src/server/src/index.ts
 import express from "express";
+import cors from "cors";
 import { Server } from "socket.io";
 import { v4 as uuidv4 } from "uuid";
 import http from "http";
@@ -9,6 +10,13 @@ import { User, Dictionary } from "./types/serverTypes";
 
 const PORT = process.env.PORT || 3000; // Add this line
 const app = express();
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  }),
+);
+app.use(express.json());
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -28,19 +36,30 @@ app.get("/", (req, res) => {
 
 let config = { width: 24, height: 16, mines: 70 };
 
+const isFourDigits = (room: string) => {
+  return /^\d{4}$/.test(room);
+};
 // Hold game states across all rooms.
 // The room ID will be the game's key.
 const gameStore: Dictionary<LobbyState> = {};
+let lobbies: Set<string> = new Set();
+
+app.post("/check-lobbies", (req, res) => {
+  const { lobby } = req.body;
+  const isInSet = lobbies.has(lobby);
+  res.json({ isInSet });
+});
+
 // Whenever a new room is created, create a game instance for players in that room
-// HACK Note this function leaks memory, as every instance created will create a second game state which is represented by the user connection.
-// TODO Find a way to systematically delete rooms which don't have any users, without deleting games that just got initialized.
 io.of("/").adapter.on("create-room", (room) => {
-  console.log(`room ${room} was created`);
+  // Prevent rooms created when a browser connects to the server to create game instances
+  if (!isFourDigits(room)) return;
   gameStore[room] = {
     board: new GameState(config),
     users: {},
     connections: {},
   };
+  lobbies.add(room);
 });
 
 const handleMovement = (
@@ -75,6 +94,7 @@ io.on("connection", (socket) => {
   let game = gameStore[room].board;
 
   console.log(`User connected with uuid ${uuid} to room ${room}`);
+  console.log(lobbies);
   gameStore[room].connections[uuid] = socket;
   gameStore[room].users[uuid] = {
     uuid,
@@ -93,6 +113,7 @@ io.on("connection", (socket) => {
   // Send UUID of current player to client
   console.log(`UUID is ${uuid} and room is ${room}`);
   socket.emit("uuid", uuid);
+  socket.emit("lobbies", lobbies);
 
   // Handle cursor movement
   socket.on("cursor_movement", (cursorPosition: User["state"]) => {

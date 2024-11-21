@@ -1,4 +1,4 @@
-import { useState, FormEvent, ChangeEvent } from "react";
+import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 
 interface JoinRoomProps {
   setRoom: (room: string) => void;
@@ -8,20 +8,41 @@ interface JoinRoomProps {
 
 export function JoinRoom({ setRoom }: JoinRoomProps) {
   const [roomID, setRoomID] = useState("");
+  const [validRoomID, setValidRoomId] = useState(false);
+
+  function checkLobbies(str: string) {
+    return fetch("http://localhost:3000/check-lobbies", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ lobby: str }),
+    })
+      .then((response) => response.json())
+      .then((data) => setValidRoomId(data.isInSet))
+      .catch((error) => {
+        console.error("Error:", error);
+        return false;
+      });
+  }
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const trimmedRoomID = roomID.trim();
-    if (!trimmedRoomID) return;
+    if (!validRoomID) return;
     setRoom(trimmedRoomID);
   };
 
   const handleRoomIDChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setRoomID(e.target.value);
+    const newRoomID = e.target.value;
+    setRoomID(newRoomID);
+    if (newRoomID.length === 4) {
+      checkLobbies(newRoomID);
+    } else {
+      setValidRoomId(false);
+    }
   };
 
-  const isFourDigits = () => {
-    return /^\d{4}$/.test(roomID);
-  };
   return (
     <div className="welcome-container">
       <div className="welcome-card">
@@ -38,7 +59,7 @@ export function JoinRoom({ setRoom }: JoinRoomProps) {
             required
           />
 
-          <button type="submit" disabled={!isFourDigits}>
+          <button type="submit" disabled={!validRoomID}>
             Start Playing
           </button>
         </form>
