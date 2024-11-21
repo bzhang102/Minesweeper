@@ -1,9 +1,9 @@
 // src/server/src/index.ts
 import express from "express";
-import { Socket, Server } from "socket.io";
+import { Server } from "socket.io";
 import { v4 as uuidv4 } from "uuid";
 import http from "http";
-import { GameState } from "./game/GameState";
+import { GameState, LobbyState } from "./game/GameState";
 import { Coord } from "./types/gameTypes";
 import { User, Dictionary } from "./types/serverTypes";
 
@@ -30,13 +30,15 @@ let config = { width: 24, height: 16, mines: 70 };
 
 // Hold game states across all rooms.
 // The room ID will be the game's key.
-const gameStore: Dictionary<GameState> = {};
-const connections: Dictionary<Socket> = {};
-const users: Dictionary<User> = {};
-
+const gameStore: Dictionary<LobbyState> = {};
 // Whenever a new room is created, create a game instance for players in that room
 io.of("/").adapter.on("create-room", (room) => {
-  gameStore[room] = new GameState(config);
+  console.log(`room ${room} was created`);
+  gameStore[room] = {
+    board: new GameState(config),
+    users: {},
+    connections: {},
+  };
 });
 
 const handleMovement = (
@@ -44,45 +46,50 @@ const handleMovement = (
   uuid: string,
   room: string,
 ) => {
-  users[uuid] = {
-    ...users[uuid],
+  gameStore[room].users[uuid] = {
+    ...gameStore[room].users[uuid],
     state: cursorPosition,
   };
 
-  io.to(room).emit("users", users);
+  io.to(room).emit("users", gameStore[room].users);
 };
 
 const handleClose = (uuid: string, room: string) => {
-  console.log(`Disconnecting ${users[uuid].username}`);
-  delete connections[uuid];
-  delete users[uuid];
-  console.log(users);
-  io.to(room).emit("users", users);
+  console.log(`Disconnecting ${gameStore[room].users[uuid].username}`);
+  delete gameStore[room].connections[uuid];
+  delete gameStore[room].users[uuid];
+  console.log(gameStore[room].users);
+  io.to(room).emit("users", gameStore[room].users);
 };
 
 io.on("connection", (socket) => {
   const username = String(socket.handshake.query["username"]);
   const room = String(socket.handshake.query["room"]);
   const uuid: string = uuidv4();
-  let game = gameStore[room];
+
+  socket.join(room);
+
+  let game = gameStore[room].board;
 
   console.log(`${username} connected with uuid ${uuid} to room ${room}`);
-  connections[uuid] = socket;
-  users[uuid] = {
+  gameStore[room].connections[uuid] = socket;
+  gameStore[room].users[uuid] = {
     username,
     uuid,
+    // This makes cursor default position off of board
     state: {
       x: -30,
       y: -30,
     },
   };
 
-  console.log(users);
+  console.log(gameStore[room].users);
 
   // Send current game state to new player
-  socket.to(room).emit("gameState", game.getGameState());
+  socket.emit("gameState", game.getGameState());
   // Send UUID of current player to client
-  socket.to(room).emit("uuid", uuid);
+  console.log(`UUID is ${uuid} and room is ${room}`);
+  socket.emit("uuid", uuid);
 
   // Handle cursor movement
   socket.on("cursor_movement", (cursorPosition: User["state"]) => {
@@ -107,8 +114,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("reset", () => {
-    gameStore[room] = new GameState(config);
-    game = gameStore[room];
+    gameStore[room].board = new GameState(config);
+    game = gameStore[room].board;
     io.to(room).emit("gameState", game.getGameState());
   });
 });

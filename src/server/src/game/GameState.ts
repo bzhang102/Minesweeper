@@ -1,4 +1,6 @@
 import { BoardConfig, Coord, Cell } from "../types/gameTypes";
+import { User, Dictionary } from "../types/serverTypes";
+import { Socket } from "socket.io";
 
 enum GameStatus {
   PLAYING,
@@ -9,6 +11,12 @@ enum GameStatus {
 type Direction = {
   dx: number;
   dy: number;
+};
+
+export type LobbyState = {
+  board: GameState;
+  connections: Dictionary<Socket>;
+  users: Dictionary<User>;
 };
 
 export class GameState {
@@ -52,7 +60,7 @@ export class GameState {
             isRevealed: false,
             adjMines: 0,
             isFlagged: false,
-          }))
+          })),
       );
   }
 
@@ -149,7 +157,7 @@ export class GameState {
 
   private checkWin(): boolean {
     return this.board.every((row) =>
-      row.every((cell) => cell.isMine || cell.isRevealed)
+      row.every((cell) => cell.isMine || cell.isRevealed),
     );
   }
 
@@ -285,7 +293,7 @@ export class GameState {
           isFlagged: cell.isFlagged,
           adjMines: cell.isRevealed ? cell.adjMines : null,
           isMine: this.status !== GameStatus.PLAYING ? cell.isMine : null,
-        }))
+        })),
       ),
       status: this.status,
       flagsLeft: this.flagsLeft,

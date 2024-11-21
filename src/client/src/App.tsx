@@ -9,11 +9,14 @@ const SERVER_URL = "http://localhost:3000";
 
 function App() {
   const [username, setUsername] = useState("");
+  const [uuid, setUUID] = useState("");
   const [socket, setSocket] = useState<Socket | null>(null);
   useEffect(() => {
     if (username) {
-      const newSocket = io(`${SERVER_URL}?username=${username}`);
+      const newSocket = io(`${SERVER_URL}?username=${username}&room=12345`);
+      newSocket.on("uuid", (uuid) => setUUID(uuid));
       setSocket(newSocket);
+
       return () => {
         newSocket.disconnect();
       };
@@ -25,7 +28,7 @@ function App() {
       <div className="app-container">
         <div className="game-container">
           <h1 className="game-title">Co-op Minesweeper</h1>
-          <Board username={username} socket={socket} />
+          <Board username={username} socket={socket} uuid={uuid} />
         </div>
       </div>
     );

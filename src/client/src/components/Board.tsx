@@ -32,9 +32,8 @@ const debounce = (fn: Function, delay: number) => {
   };
 };
 
-export function Board({ username, socket }: BoardProps) {
+export function Board({ username, socket, uuid }: BoardProps) {
   const [users, setUsers] = useState<Users>({});
-  const [uuid, setUUID] = useState<String>("");
   const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE);
   const boardRef = useRef<HTMLDivElement>(null);
 
@@ -43,9 +42,10 @@ export function Board({ username, socket }: BoardProps) {
     setGameState(newState);
   }, []);
 
-  const handleUUID = useCallback((newUUID: String) => {
-    setUUID(newUUID);
-  }, []);
+  /* const handleUUID = useCallback((newUUID: String) => {
+   *   console.log(`UUID is ${newUUID}`);
+   *   setUUID(newUUID);
+   * }, []); */
 
   const handleUsersUpdate = useCallback((newUserData: Users) => {
     setUsers(newUserData);
@@ -110,16 +110,17 @@ export function Board({ username, socket }: BoardProps) {
 
   // Game state and users setup
   useEffect(() => {
+    /* console.log("Scanning for uuid"); */
     socket.on("gameState", handleGameState);
     socket.on("users", handleUsersUpdate);
-    socket.on("uuid", handleUUID);
+    /* socket.on("uuid", handleUUID); */
 
     return () => {
       socket.off("gameState");
       socket.off("users");
-      socket.off("uuid");
+      /* socket.off("uuid"); */
     };
-  }, [socket, handleUUID, handleGameState, handleUsersUpdate]);
+  }, [socket /* handleUUID */, , handleGameState, handleUsersUpdate]);
 
   // Mouse movement setup - now using window event listener
   useEffect(() => {
@@ -132,7 +133,10 @@ export function Board({ username, socket }: BoardProps) {
   // Render cursors for other users
   const renderCursors = useCallback(() => {
     return Object.entries(users).map(([user_uuid, user]) => {
-      if (user.uuid === uuid) return null;
+      console.log(uuid);
+      if (user.uuid === uuid) {
+        return;
+      }
       return <Cursor key={user_uuid} point={[user.state.x, user.state.y]} />;
     });
   }, [users, username]);

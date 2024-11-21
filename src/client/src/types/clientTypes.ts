@@ -60,6 +60,7 @@ export interface CursorPath {
 export interface BoardProps {
   username: string;
   socket: any;
+  uuid: string;
 }
 
 export interface User {
