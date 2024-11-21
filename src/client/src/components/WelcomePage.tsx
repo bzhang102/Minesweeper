@@ -18,7 +18,7 @@ export function WelcomePage({ setRoom }: WelcomeProps) {
   if (joinRoom) {
     return <JoinRoom setRoom={setRoom} />;
   } else if (createRoom) {
-    console.log("creating room");
+    setRoom(room);
   } else {
     return (
       <div>
