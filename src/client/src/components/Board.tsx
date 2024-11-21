@@ -32,7 +32,7 @@ const debounce = (fn: Function, delay: number) => {
   };
 };
 
-export function Board({ username, socket, uuid }: BoardProps) {
+export function Board({ socket, uuid }: BoardProps) {
   const [users, setUsers] = useState<Users>({});
   const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE);
   const boardRef = useRef<HTMLDivElement>(null);
@@ -139,7 +139,7 @@ export function Board({ username, socket, uuid }: BoardProps) {
       }
       return <Cursor key={user_uuid} point={[user.state.x, user.state.y]} />;
     });
-  }, [users, username]);
+  }, [users]);
 
   return (
     <div className="board-container">

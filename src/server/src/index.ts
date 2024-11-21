@@ -57,7 +57,7 @@ const handleMovement = (
 };
 
 const handleClose = (uuid: string, room: string) => {
-  console.log(`Disconnecting ${gameStore[room].users[uuid].username}`);
+  console.log(`Disconnecting ${gameStore[room].users[uuid].uuid}`);
   delete gameStore[room].connections[uuid];
   delete gameStore[room].users[uuid];
   console.log(gameStore[room].users);
@@ -65,7 +65,6 @@ const handleClose = (uuid: string, room: string) => {
 };
 
 io.on("connection", (socket) => {
-  const username = String(socket.handshake.query["username"]);
   const room = String(socket.handshake.query["room"]);
   const uuid: string = uuidv4();
 
@@ -75,10 +74,9 @@ io.on("connection", (socket) => {
 
   let game = gameStore[room].board;
 
-  console.log(`${username} connected with uuid ${uuid} to room ${room}`);
+  console.log(`User connected with uuid ${uuid} to room ${room}`);
   gameStore[room].connections[uuid] = socket;
   gameStore[room].users[uuid] = {
-    username,
     uuid,
     // This makes cursor default position off of board
     state: {
