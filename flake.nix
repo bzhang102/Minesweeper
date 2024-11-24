@@ -53,6 +53,7 @@
                 
                 # Apply schema.sql if it exists
                 if [ -f "$PWD/src/server/schema.sql" ]; then
+                  echo "$PWD/src/server/schema.sql" 
                   echo "Applying schema from schema.sql..."
                   psql -d minesweeper_db -f "$PWD/src/server/schema.sql"
                   echo "Schema applied successfully."

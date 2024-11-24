@@ -78,6 +78,7 @@ function AppContent(): JSX.Element {
   };
 
   const handleCreateAccount = async (username: string, password: string): Promise<void> => {
+    console.log("REQUEST SENT")
     try {
       const hashedPassword = await hashPassword(password);
       const response = await fetch('http://localhost:3000/create-account', {
