@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Cursor } from "./Cursor";
 import { Cell } from "./Cell";
 import { GameState, Coord, BoardProps, Users } from "../types/clientTypes";
+import { throttle } from "lodash";
 import "./Board.css";
 
 const INITIAL_GAME_STATE: GameState = {
@@ -10,17 +11,17 @@ const INITIAL_GAME_STATE: GameState = {
   flagsLeft: 40,
 };
 
-const THROTTLE_MS = 5;
+const THROTTLE_MS = 120;
 
-const throttle = (fn: Function, throttle: number) => {
-  let lastTime = 0;
-  return (...args: any[]) => {
-    const now = new Date().getTime();
-    if (now - lastTime < throttle) return;
-    lastTime = now;
-    fn(...args);
-  };
-};
+/* const throttle = (fn: Function, throttle: number) => {
+ *   let lastTime = 0;
+ *   return (...args: any[]) => {
+ *     const now = new Date().getTime();
+ *     if (now - lastTime < throttle) return;
+ *     lastTime = now;
+ *     fn(...args);
+ *   };
+ * }; */
 
 const debounce = (fn: Function, delay: number) => {
   let id: any;
@@ -136,7 +137,9 @@ export function Board({ socket, uuid }: BoardProps) {
       if (user.uuid === uuid) {
         return;
       }
-      return <Cursor key={user_uuid} point={[user.state.x, user.state.y]} />;
+      return (
+        <Cursor key={user_uuid} color="red" x={user.state.x} y={user.state.y} />
+      );
     });
   }, [users]);
 

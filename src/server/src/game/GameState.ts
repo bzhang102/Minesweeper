@@ -129,6 +129,20 @@ export class GameState {
     if (this.board[move.y][move.x].isMine) {
       this.moveMine(move);
     }
+
+    for (const dir of GameState.DIRECTIONS) {
+      const newX = move.x + dir.dx;
+      const newY = move.y + dir.dy;
+
+      if (!this.isValidMove({ x: newX, y: newY })) {
+        continue;
+      }
+
+      const adjacentCell = this.board[newY][newX];
+      if (adjacentCell.isMine) {
+        this.moveMine({ x: newX, y: newY });
+      }
+    }
     this.firstClick = false;
   }
 
