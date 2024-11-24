@@ -6,14 +6,131 @@ import http from "http";
 import { GameState } from "./game/GameState";
 import { Coord } from "./types/gameTypes";
 import { User, Dictionary } from "./types/serverTypes";
+import cors from "cors";
+import { Client } from 'pg';
 
 const PORT = process.env.PORT || 3000; // Add this line
 const app = express();
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://coopminesweeper.netlify.app'],
+  methods: ['GET', 'POST', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.options('*', cors());
+// Body parsing middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 const server = http.createServer(app);
+
+const client = new Client({
+  host: 'localhost',
+  database: 'minesweeper_db',
+  port: 5432
+});
+
+client.connect()
+  .then(() => console.log('Connected to PostgreSQL database'))
+  .catch(err => console.error('Error connecting to database:', err));
+
+
+
+app.post("/create-account", async (req, res) => {
+  const { username, password } = req.body;
+
+  // Validate input
+  if (!username || !password) {
+    return res.status(400).json({
+      error: "Username and password are required",
+    });
+  }
+
+  try {
+    // Insert the user into the database
+    const query = `INSERT INTO persons (username, userpassword, accesstoken) VALUES ($1, $2, $3) RETURNING *`;
+    const accessToken = "eee"; // Replace this with actual token generation logic
+    const values = [username, password, accessToken];
+
+    const result = await client.query(query, values);
+
+    // Respond only after the database operation succeeds
+    res.status(201).json({
+      message: "Account created successfully",
+      user: result.rows[0], // Send back the created user (excluding sensitive fields)
+      ok: true
+    });
+  } catch (error) {
+    console.error("Error creating account:", error);
+
+
+    // General error response
+    res.status(500).json({
+      error: "Failed to create account",
+    });
+  }
+});
+
+async function findPersonByUsernameAndPassword(username:string, password: string) {
+  // Define the SQL query
+  const query = `SELECT * FROM persons WHERE username = $1 AND userpassword = $2`;
+
+  try {
+    // Execute the query with username and password as parameters
+    const result = await client.query(query, [username, password]);
+    // Check if a record was found
+    if (result.rows.length > 0) {
+      console.log('Person found:', result.rows[0]);
+      return true // Return the found person
+    } else {
+      console.log('No person found wwwith the given username and password.');
+      return false; // No match found
+    }
+  } catch (error) {
+    console.error('Error querying the persons table:', error);
+    throw error; // Re-throw the error for handling elsewhere
+  }
+}
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  // Validate input
+  if (!username || !password) {
+    return res.status(400).json({
+      error: "Username and password are required",
+    });
+  }
+
+  try {
+    // Insert the user into the database
+    let t = await findPersonByUsernameAndPassword(username, password)
+
+    // Respond only after the database operation succeeds
+    console.log(t)
+    if (t){
+      res.status(201).json({
+        message: "Account found",
+        user: t, // Send back the created user (excluding sensitive fields)
+        ok: true
+      });
+    }
+    else{
+      res.status(401).json({
+        message: "Account not found",
+        user: false, // Send back the created user (excluding sensitive fields)
+      });
+    }
+  } catch (error) {
+    // General error response
+    res.status(500).json({
+      error: "internal error",
+    });
+  }
+});
+
 const io = new Server(server, {
   cors: {
     // origin: "http://localhost:5173",
-    origin: "https://coopminesweeper.netlify.app",
+    origin: ['*', "https://coopminesweeper.netlify.app"],
     methods: ["GET", "POST"],
   },
 });
@@ -97,93 +214,3 @@ io.on("connection", (socket) => {
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-<<<<<<< HEAD
-
-// for testing
-app.get("/", (req, res) => {
-  res.send(`
-    <html>
-      <head>
-        <style>
-          .board {
-            display: grid;
-            grid-template-columns: repeat(16, 30px);
-            gap: 1px;
-            background: #ccc;
-            padding: 10px;
-          }
-          .cell {
-            width: 30px;
-            height: 30px;
-            background: #eee;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-          }
-          .revealed { background: #fff; }
-          .mine { background: red; }
-          .flag { background: yellow; }
-        </style>
-      </head>
-      <body>
-        <div id="controls">
-          <button id="resetBtn">Reset Board</button>
-        </div>
-        <div id="board" class="board"></div>
-        <div id="status"></div>
-
-        <script src="/socket.io/socket.io.js"></script>
-        <script>
-          const socket = io();
-          const board = document.getElementById('board');
-          const status = document.getElementById('status');
-          const resetBtn = document.getElementById('resetBtn');
-
-          resetBtn.addEventListener('click', () => {
-            socket.emit('reset');
-          });
-
-          function updateBoard(gameState) {
-            board.innerHTML = '';
-            gameState.board.forEach((row, y) => {
-              row.forEach((cell, x) => {
-                const div = document.createElement('div');
-                div.className = 'cell';
-                if (cell.isRevealed) {
-                  div.className += ' revealed';
-                  div.textContent = cell.adjMines || '';
-                }
-                if (cell.isExploded) {
-                  div.className += ' mine';
-                  div.textContent = '💥';
-                }
-                if (cell.isFlagged) {
-                  div.className += ' flag';
-                  div.textContent = '🚩';
-                }
-
-                div.addEventListener('click', () => {
-                  socket.emit('click', { x, y });
-                });
-                div.addEventListener('contextmenu', (e) => {
-                  e.preventDefault();
-                  socket.emit('flag', { x, y });
-                });
-                board.appendChild(div);
-              });
-            });
-            status.textContent = 'Game Status: ' + gameState.status;
-          }
-
-          socket.on('gameState', updateBoard);
-          socket.on('connect', () => {
-            console.log('Connected to server');
-          });
-        </script>
-      </body>
-    </html>
-  `);
-});
-=======
->>>>>>> 3364e8afd033ac2bdf2f9d16af5a4e80bf3540b9
