@@ -30,7 +30,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const newSocket = io(`${SERVER_URL}?username=${username}`);
+    const newSocket = io(`http://localhost:3000/?username=${username}`);
     setSocket(newSocket);
     return () => {
       newSocket.disconnect();
