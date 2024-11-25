@@ -44,26 +44,30 @@ app.post("/create-account", async (req, res) => {
       error: "Username and password are required",
     });
   }
+  const query = `SELECT * FROM persons WHERE username = $1`;
+  const result = await client.query(query, [username]);
+  if(result.rows.length != 0){
+    return res.status(401).json({
+      error: "Error: Username Already Taken",
+    });
+  }
 
   try {
-    // Insert the user into the database
     const query = `INSERT INTO persons (username, userpassword, accesstoken) VALUES ($1, $2, $3) RETURNING *`;
-    const accessToken = "eee"; // Replace this with actual token generation logic
+    const accessToken = "eee"; 
     const values = [username, password, accessToken];
 
     const result = await client.query(query, values);
 
-    // Respond only after the database operation succeeds
     res.status(201).json({
       message: "Account created successfully",
-      user: result.rows[0], // Send back the created user (excluding sensitive fields)
+      user: result.rows[0], 
       ok: true
     });
   } catch (error) {
     console.error("Error creating account:", error);
 
 
-    // General error response
     res.status(500).json({
       error: "Failed to create account",
     });
@@ -71,23 +75,20 @@ app.post("/create-account", async (req, res) => {
 });
 
 async function findPersonByUsernameAndPassword(username:string, password: string) {
-  // Define the SQL query
   const query = `SELECT * FROM persons WHERE username = $1 AND userpassword = $2`;
 
   try {
-    // Execute the query with username and password as parameters
     const result = await client.query(query, [username, password]);
-    // Check if a record was found
     if (result.rows.length > 0) {
       console.log('Person found:', result.rows[0]);
-      return true // Return the found person
+      return true 
     } else {
       console.log('No person found wwwith the given username and password.');
-      return false; // No match found
+      return false; 
     }
   } catch (error) {
     console.error('Error querying the persons table:', error);
-    throw error; // Re-throw the error for handling elsewhere
+    throw error; 
   }
 }
 app.post("/login", async (req, res) => {

@@ -78,7 +78,7 @@ function AppContent(): JSX.Element {
   };
 
   const handleCreateAccount = async (username: string, password: string): Promise<void> => {
-    console.log("REQUEST SENT")
+    console.log("REQUEST SENT");
     try {
       const hashedPassword = await hashPassword(password);
       const response = await fetch('http://localhost:3000/create-account', {
@@ -86,19 +86,24 @@ function AppContent(): JSX.Element {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password: hashedPassword }),
       });
-
-      const data: LoginResponse = await response.json();
-      if (data.ok) {
-        console.log('Account created successfully:', data);
+  
+      // Check if the response was successful
+      if (response.status === 201) {
+        console.log('Account created successfully:');
         setAuthenticatedUser(username);
         navigate('/dashboard');
       } else {
-        console.error('Account creation failed:', data);
+        const errorData = await response.json();
+        console.log(errorData)
+        console.error('Account creation failed:', errorData.error || 'Unknown error');
+        throw new Error(errorData.error || 'Account creation failed.');
       }
     } catch (error) {
       console.error('Error during account creation:', error);
+      throw error; // Re-throw the error for the caller to handle (e.g., UI component)
     }
   };
+  
 
   return (
     <Routes>
