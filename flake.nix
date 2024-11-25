@@ -19,7 +19,7 @@
             echo "Hello Devs"
             
             # Set up PostgreSQL environment variables
-            export PGDATA="$PWD/src/server/.postgres"
+            export PGDATA="$PWD/.postgres"
             export DATABASE_URL="postgresql:///minesweeper_db"
 
             # Initialize PostgreSQL if it hasn't been initialized yet
@@ -44,10 +44,9 @@
                 echo "Created minesweeper_db database"
                 
                 # Apply schema.sql if it exists
-                if [ -f "$PWD/src/server/schema.sql" ]; then
-                  echo "$PWD/src/server/schema.sql" 
+                if [ -f "$PWD/schema.sql" ]; then
                   echo "Applying schema from schema.sql..."
-                  psql -d minesweeper_db -f "$PWD/src/server/schema.sql"
+                  psql -d minesweeper_db -f "$PWD/schema.sql"
                   echo "Schema applied successfully."
                 else
                   echo "No schema.sql file found. Skipping schema setup."
