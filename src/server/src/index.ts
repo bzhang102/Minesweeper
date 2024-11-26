@@ -35,6 +35,7 @@ client.connect()
 
 
 
+// Update the create account route
 app.post("/create-account", async (req, res) => {
   const { username, password } = req.body;
 
@@ -46,8 +47,13 @@ app.post("/create-account", async (req, res) => {
   }
 
   try {
-    // Insert the user into the database
-    const query = `INSERT INTO persons (username, userpassword, accesstoken) VALUES ($1, $2, $3) RETURNING *`;
+    // Insert the user into the database with default solve time and partners
+    const query = `
+      INSERT INTO persons 
+      (username, userpassword, accesstoken, quickest_solve_time, solve_partners) 
+      VALUES ($1, $2, $3, NULL, ARRAY[]::TEXT[]) 
+      RETURNING *
+    `;
     const accessToken = "eee"; // Replace this with actual token generation logic
     const values = [username, password, accessToken];
 
@@ -56,16 +62,103 @@ app.post("/create-account", async (req, res) => {
     // Respond only after the database operation succeeds
     res.status(201).json({
       message: "Account created successfully",
-      user: result.rows[0], // Send back the created user (excluding sensitive fields)
+      user: result.rows[0],
       ok: true
     });
   } catch (error) {
     console.error("Error creating account:", error);
-
-
-    // General error response
     res.status(500).json({
       error: "Failed to create account",
+    });
+  }
+});
+
+// New route to update quickest solve time
+app.post("/update-best-time", async (req, res) => {
+  const { username, solveTime, partners } = req.body;
+
+  // Validate input
+  if (!username || solveTime === undefined || !Array.isArray(partners)) {
+    return res.status(400).json({
+      error: "Invalid input parameters",
+    });
+  }
+
+  try {
+    // Query to find the current best time for the user
+    const currentBestQuery = `
+      SELECT quickest_solve_time 
+      FROM persons 
+      WHERE username = $1
+    `;
+    const currentBestResult = await client.query(currentBestQuery, [username]);
+
+    // If no current best time or new time is faster, update
+    const currentBestTime = currentBestResult.rows[0]?.quickest_solve_time;
+    if (currentBestTime === null || solveTime < currentBestTime) {
+      const updateQuery = `
+        UPDATE persons 
+        SET 
+          quickest_solve_time = $2, 
+          solve_partners = $3 
+        WHERE username = $1 
+        RETURNING quickest_solve_time, solve_partners
+      `;
+      
+      const updateResult = await client.query(updateQuery, [
+        username, 
+        solveTime, 
+        partners
+      ]);
+
+      return res.status(200).json({
+        message: "Best time updated successfully",
+        bestTime: updateResult.rows[0].quickest_solve_time,
+        partners: updateResult.rows[0].solve_partners,
+        updated: true
+      });
+    }
+
+    // If current time is faster or equal, return current best
+    res.status(200).json({
+      message: "Current best time not beaten",
+      bestTime: currentBestTime,
+      updated: false
+    });
+  } catch (error) {
+    console.error("Error updating best time:", error);
+    res.status(500).json({
+      error: "Failed to update best time",
+    });
+  }
+});
+
+// New route to get user's best time
+app.get("/get-best-time/:username", async (req, res) => {
+  const { username } = req.params;
+
+  try {
+    const query = `
+      SELECT quickest_solve_time, solve_partners 
+      FROM persons 
+      WHERE username = $1
+    `;
+    const result = await client.query(query, [username]);
+
+    if (result.rows.length > 0) {
+      res.status(200).json({
+        bestTime: result.rows[0].quickest_solve_time,
+        partners: result.rows[0].solve_partners
+      });
+    } else {
+      res.status(404).json({
+        error: "User not found"
+      });
+    }
+  } catch (error) {
+    console.error("Error retrieving best time:", error);
+    res.status(500).json({
+      error: "Failed to retrieve best time",
     });
   }
 });

@@ -27,8 +27,11 @@ SET default_table_access_method = heap;
 CREATE TABLE public.persons (
     username character varying(255),
     userpassword character varying(255),
-    accesstoken character varying(255)
+    accesstoken character varying(255),
+    quickest_solve_time INTEGER,
+    solve_partners TEXT[] DEFAULT ARRAY[]::TEXT[]
 );
+
 
 
 --
