@@ -16,15 +16,70 @@ const THROTTLE_MS = 50;
 export function Board({ username, socket }: BoardProps) {
   const [users, setUsers] = useState<Users>({});
   const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE);
+  const [timer, setTimer] = useState(0);
+  const [isGameRunning, setIsGameRunning] = useState(false);
   const boardRef = useRef<HTMLDivElement>(null);
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Socket event handlers
-  const handleGameState = useCallback((newState: GameState) => {
-    setGameState(newState);
+  // Format timer to MM:SS
+  const formatTime = (totalSeconds: number) => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  // Submit best time to server
+  const submitBestTime = useCallback(() => {
+    if (timer === 0) return;
+
+    const partners = Object.entries(users)
+      .filter(([_, user]) => user.username !== username)
+      .map(([_, user]) => user.username);
+
+    fetch('/update-best-time', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username,
+        solveTime: timer,
+        partners
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.updated) {
+        console.log('New best time set!', data);
+        // Optionally show a notification or update UI
+      }
+    })
+    .catch(error => {
+      console.error('Error submitting best time:', error);
+    });
+  }, [timer, username, users]);
+
+  // Start timer
+  const startTimer = useCallback(() => {
+    setIsGameRunning(true);
+    setTimer(0);
+    
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+    }
+    
+    timerIntervalRef.current = setInterval(() => {
+      setTimer(prevTimer => prevTimer + 1);
+    }, 1000);
   }, []);
 
-  const handleUsersUpdate = useCallback((newUserData: Users) => {
-    setUsers(newUserData);
+  // Stop timer
+  const stopTimer = useCallback(() => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    setIsGameRunning(false);
   }, []);
 
   // throttle mouse movement
@@ -69,7 +124,8 @@ export function Board({ username, socket }: BoardProps) {
 
   const handleReset = useCallback(() => {
     socket.emit("reset");
-  }, [socket]);
+    stopTimer();
+  }, [socket, stopTimer]);
 
   // Socket connection setup
   useEffect(() => {
@@ -86,14 +142,30 @@ export function Board({ username, socket }: BoardProps) {
 
   // Game state and users setup
   useEffect(() => {
-    socket.on("gameState", handleGameState);
-    socket.on("users", handleUsersUpdate);
+    socket.on("gameState", (newState: GameState) => {
+      setGameState(newState);
+
+      // Start timer on first move
+      if (!isGameRunning && newState.board.some(row => row.some(cell => cell.isRevealed))) {
+        startTimer();
+      }
+
+      // Check for game completion
+      if (newState.status === 1 || newState.status === 2) {
+        stopTimer();
+        submitBestTime();
+      }
+    });
+
+    socket.on("users", (newUserData: Users) => {
+      setUsers(newUserData);
+    });
 
     return () => {
       socket.off("gameState");
       socket.off("users");
     };
-  }, [socket, handleGameState, handleUsersUpdate]);
+  }, [socket, isGameRunning, startTimer, stopTimer, submitBestTime]);
 
   // Mouse movement setup - now using window event listener
   useEffect(() => {
@@ -102,6 +174,15 @@ export function Board({ username, socket }: BoardProps) {
       window.removeEventListener("mousemove", handleMouseMove);
     };
   }, [handleMouseMove]);
+
+  // Cleanup timer on component unmount
+  useEffect(() => {
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+    };
+  }, []);
 
   // Render cursors for other users
   const renderCursors = useCallback(() => {
@@ -115,6 +196,7 @@ export function Board({ username, socket }: BoardProps) {
     <div className="board-container">
       <div className="game-controls">
         <div className="flags-counter">🚩 {gameState.flagsLeft}</div>
+        <div className="game-timer">⏱️ {formatTime(timer)}</div>
         <button className="reset-button" onClick={handleReset}>
           New Game
         </button>
