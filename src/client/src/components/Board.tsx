@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { throttle } from "lodash";
 import { Cursor } from "./Cursor";
 import { Cell } from "./Cell";
 import { GameState, Coord, BoardProps, Users } from "../types/clientTypes";
+import { throttle } from "lodash";
 import "./Board.css";
 
 const INITIAL_GAME_STATE: GameState = {
@@ -11,9 +11,29 @@ const INITIAL_GAME_STATE: GameState = {
   flagsLeft: 40,
 };
 
-const THROTTLE_MS = 50;
+const THROTTLE_MS = 120;
 
-export function Board({ username, socket }: BoardProps) {
+/* const throttle = (fn: Function, throttle: number) => {
+ *   let lastTime = 0;
+ *   return (...args: any[]) => {
+ *     const now = new Date().getTime();
+ *     if (now - lastTime < throttle) return;
+ *     lastTime = now;
+ *     fn(...args);
+ *   };
+ * }; */
+
+const debounce = (fn: Function, delay: number) => {
+  let id: any;
+  return (...args: any[]) => {
+    if (id) clearTimeout(id);
+    id = setTimeout(() => {
+      fn(...args);
+    }, delay);
+  };
+};
+
+export function Board({ socket, uuid }: BoardProps) {
   const [users, setUsers] = useState<Users>({});
   const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE);
   const boardRef = useRef<HTMLDivElement>(null);
@@ -23,6 +43,11 @@ export function Board({ username, socket }: BoardProps) {
     setGameState(newState);
   }, []);
 
+  /* const handleUUID = useCallback((newUUID: String) => {
+   *   console.log(`UUID is ${newUUID}`);
+   *   setUUID(newUUID);
+   * }, []); */
+
   const handleUsersUpdate = useCallback((newUserData: Users) => {
     setUsers(newUserData);
   }, []);
@@ -31,9 +56,9 @@ export function Board({ username, socket }: BoardProps) {
   const updatePositionThrottled = useRef(
     throttle(
       (position: object) => socket.emit("cursor_movement", position),
-      THROTTLE_MS
-    )
-  ).current;
+      THROTTLE_MS,
+    ),
+  );
 
   // Mouse movement handler
   const handleMouseMove = useCallback(
@@ -44,12 +69,12 @@ export function Board({ username, socket }: BoardProps) {
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      updatePositionThrottled({
+      updatePositionThrottled.current({
         x,
         y,
       });
     },
-    [updatePositionThrottled]
+    [updatePositionThrottled],
   );
 
   // Game action handlers
@@ -57,14 +82,14 @@ export function Board({ username, socket }: BoardProps) {
     (coord: Coord) => {
       socket.emit("click", coord);
     },
-    [socket]
+    [socket],
   );
 
   const handleRightClick = useCallback(
     (coord: Coord) => {
       socket.emit("flag", coord);
     },
-    [socket]
+    [socket],
   );
 
   const handleReset = useCallback(() => {
@@ -75,7 +100,7 @@ export function Board({ username, socket }: BoardProps) {
   useEffect(() => {
     socket.on("connect", () => console.log("Connected to server!"));
     socket.on("connect_error", (error: any) =>
-      console.log("Connection error:", error)
+      console.log("Connection error:", error),
     );
 
     return () => {
@@ -86,14 +111,17 @@ export function Board({ username, socket }: BoardProps) {
 
   // Game state and users setup
   useEffect(() => {
+    /* console.log("Scanning for uuid"); */
     socket.on("gameState", handleGameState);
     socket.on("users", handleUsersUpdate);
+    /* socket.on("uuid", handleUUID); */
 
     return () => {
       socket.off("gameState");
       socket.off("users");
+      /* socket.off("uuid"); */
     };
-  }, [socket, handleGameState, handleUsersUpdate]);
+  }, [socket /* handleUUID */, , handleGameState, handleUsersUpdate]);
 
   // Mouse movement setup - now using window event listener
   useEffect(() => {
@@ -105,11 +133,15 @@ export function Board({ username, socket }: BoardProps) {
 
   // Render cursors for other users
   const renderCursors = useCallback(() => {
-    return Object.entries(users).map(([uuid, user]) => {
-      if (user.username === username) return null;
-      return <Cursor key={uuid} point={[user.state.x, user.state.y]} />;
+    return Object.entries(users).map(([user_uuid, user]) => {
+      if (user.uuid === uuid) {
+        return;
+      }
+      return (
+        <Cursor key={user_uuid} color="red" x={user.state.x} y={user.state.y} />
+      );
     });
-  }, [users, username]);
+  }, [users]);
 
   return (
     <div className="board-container">
@@ -130,7 +162,7 @@ export function Board({ username, socket }: BoardProps) {
               onLeftClick={handleLeftClick}
               onRightClick={handleRightClick}
             />
-          ))
+          )),
         )}
 
         {gameState.status !== 0 && (

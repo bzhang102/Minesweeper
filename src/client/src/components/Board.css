@@ -18,7 +18,8 @@
   margin-bottom: 16px;
 }
 
-.flags-counter, .reset-button {
+.flags-counter,
+.reset-button {
   padding: 8px 16px;
   font-size: 14px;
   font-weight: 500;
@@ -26,9 +27,9 @@
   background: #333;
   border: none;
   border-radius: 0;
-  height: 32px;   
-  line-height: 16px; 
-  box-sizing: border-box;  
+  height: 32px;
+  line-height: 16px;
+  box-sizing: border-box;
 }
 
 .reset-button:hover {
@@ -39,7 +40,7 @@
   background: #ddd;
   padding: 1px;
   display: grid;
-  grid-template-columns: repeat(16, 30px);
+  grid-template-columns: repeat(24, 30px);
   grid-template-rows: repeat(16, 30px);
   gap: 1px;
   position: relative;
@@ -60,4 +61,14 @@
 
 .won { background: #e8f5e9; }
 
+<<<<<<< Updated upstream
 .lost { background: #fbe9e7; }
+||||||| Stash base
+.game-status.lost {
+  color: #c92a2a;
+}
+=======
+.game-status.lost {
+  color: #c92a2a;
+}
+>>>>>>> Stashed changes
