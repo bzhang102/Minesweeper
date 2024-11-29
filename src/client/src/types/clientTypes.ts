@@ -32,6 +32,7 @@ export interface GameState {
   board: Cell[][];
   status: GameStatus;
   flagsLeft: number;
+  elapsedTime: number;
 }
 
 // Socket event types

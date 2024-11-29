@@ -123,7 +123,8 @@ body {
 .error-message {
     color: #ff3333;
     text-align: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0rem;
+    margin-top: 1rem;
     font-size: 0.9rem;
 }
   

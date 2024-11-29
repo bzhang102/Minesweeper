@@ -11,15 +11,53 @@ const CreateAccount: React.FC<CreateAccountProps> = ({ onCreateAccount }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
+  const validateInputs = (): boolean => {
+    //Username validation
+    if (username.length < 5) {
+      setError('Username must be at least 5 characters long.');
+      return false;
+    }
+
+    // Password validation
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long.');
+      return false;
+    }
+    if (!/[A-Z]/.test(password)) {
+      setError('Password must contain at least one uppercase letter.');
+      return false;
+    }
+    if (!/[a-z]/.test(password)) {
+      setError('Password must contain at least one lowercase letter.');
+      return false;
+    }
+    if (!/[0-9]/.test(password)) {
+      setError('Password must contain at least one digit.');
+      return false;
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      setError('Password must contain at least one special character.');
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    
+
+    // Input validation
+    if (!validateInputs()) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
       await onCreateAccount(username, password);
     } catch (error) {
-      setError('Account creation failed. Please try again.');
+      setError(error instanceof Error ? error.message : 'Account creation failed. Please try again.');
     } finally {
       setIsLoading(false);
     }

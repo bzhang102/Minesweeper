@@ -30,7 +30,6 @@ const Dashboard: React.FC<DashboardProps> = ({ username }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    // const newSocket = io(`${SERVER_URL}?username=${username}`);
     const newSocket = io(`http://localhost:3000/?username=${username}`);
     setSocket(newSocket);
     return () => {
@@ -72,14 +71,20 @@ function AppContent(): JSX.Element {
         navigate('/dashboard');
       } else {
         console.error('Login failed:', data);
+        throw new Error(data.error || 'The username or password is incorrect, please try again');
       }
     } catch (error) {
       console.error('Error during login:', error);
+      if (error instanceof Error) {
+        throw error;
+      } else {
+        throw new Error('Account creation failed.');
+      }
     }
   };
 
   const handleCreateAccount = async (username: string, password: string): Promise<void> => {
-    console.log("REQUEST SENT")
+    console.log("REQUEST SENT");
     try {
       const hashedPassword = await hashPassword(password);
       const response = await fetch('http://localhost:3000/create-account', {
@@ -87,19 +92,27 @@ function AppContent(): JSX.Element {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password: hashedPassword }),
       });
-
-      const data: LoginResponse = await response.json();
-      if (data.ok) {
-        console.log('Account created successfully:', data);
+  
+      // Check if the response was successful
+      if (response.status === 201) {
+        console.log('Account created successfully:');
         setAuthenticatedUser(username);
         navigate('/dashboard');
       } else {
-        console.error('Account creation failed:', data);
+        const errorData = await response.json();
+        console.log(errorData)
+        console.error('Account creation failed:', errorData.error || 'Unknown error');
+        throw new Error(errorData.error || 'Account creation failed.');
       }
     } catch (error) {
       console.error('Error during account creation:', error);
-    }
+      if (error instanceof Error) {
+        throw error;
+      } else {
+        throw new Error('Account creation failed.');
+      }    }
   };
+  
 
   return (
     <Routes>

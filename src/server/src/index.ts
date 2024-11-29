@@ -45,28 +45,31 @@ app.post("/create-account", async (req, res) => {
       error: "Username and password are required",
     });
   }
+  const query = `SELECT * FROM persons WHERE username = $1`;
+  const result = await client.query(query, [username]);
+  if(result.rows.length != 0){
+    return res.status(401).json({
+      error: "Error: Username Already Taken",
+    });
+  }
+  //else{console.log("SUCESSSSSSSSS")}
 
   try {
-    // Insert the user into the database with default solve time and partners
-    const query = `
-      INSERT INTO persons 
-      (username, userpassword, accesstoken, quickest_solve_time, solve_partners) 
-      VALUES ($1, $2, $3, NULL, ARRAY[]::TEXT[]) 
-      RETURNING *
-    `;
-    const accessToken = "eee"; // Replace this with actual token generation logic
+    const query = `INSERT INTO persons (username, userpassword, accesstoken) VALUES ($1, $2, $3) RETURNING *`;
+    const accessToken = "eee"; 
     const values = [username, password, accessToken];
 
     const result = await client.query(query, values);
 
-    // Respond only after the database operation succeeds
     res.status(201).json({
       message: "Account created successfully",
-      user: result.rows[0],
+      user: result.rows[0], 
       ok: true
     });
   } catch (error) {
     console.error("Error creating account:", error);
+
+
     res.status(500).json({
       error: "Failed to create account",
     });
@@ -75,6 +78,7 @@ app.post("/create-account", async (req, res) => {
 
 // New route to update quickest solve time
 app.post("/update-best-time", async (req, res) => {
+  console.log("Best time update")
   const { username, solveTime, partners } = req.body;
 
   // Validate input
@@ -164,23 +168,20 @@ app.get("/get-best-time/:username", async (req, res) => {
 });
 
 async function findPersonByUsernameAndPassword(username:string, password: string) {
-  // Define the SQL query
   const query = `SELECT * FROM persons WHERE username = $1 AND userpassword = $2`;
 
   try {
-    // Execute the query with username and password as parameters
     const result = await client.query(query, [username, password]);
-    // Check if a record was found
     if (result.rows.length > 0) {
       console.log('Person found:', result.rows[0]);
-      return true // Return the found person
+      return true 
     } else {
       console.log('No person found wwwith the given username and password.');
-      return false; // No match found
+      return false; 
     }
   } catch (error) {
     console.error('Error querying the persons table:', error);
-    throw error; // Re-throw the error for handling elsewhere
+    throw error; 
   }
 }
 app.post("/login", async (req, res) => {
@@ -223,7 +224,7 @@ app.post("/login", async (req, res) => {
 const io = new Server(server, {
   cors: {
     // origin: "http://localhost:5173",
-    origin: ['*', "https://coopminesweeper.netlify.app"],
+    origin: ['http://localhost:5173', "https://coopminesweeper.netlify.app"],
     methods: ["GET", "POST"],
   },
 });
@@ -238,6 +239,7 @@ app.get("/", (req, res) => {
 
 let config = { width: 16, height: 16, mines: 40 };
 let game = new GameState(config);
+let globalTimerInterval: NodeJS.Timeout | null = null;
 
 const connections: Dictionary<Socket> = {};
 const users: Dictionary<User> = {};
@@ -258,10 +260,33 @@ const handleClose = (uuid: string) => {
   io.emit("users", users);
 };
 
+// Function to start timer if it's not already running
+const startGlobalTimer = () => {
+  if (!globalTimerInterval) {
+    console.log("Starting global timer");
+    game.startTimer();
+    globalTimerInterval = setInterval(() => {
+      game.getElapsedTime();
+      io.emit("gameState", game.getGameState());
+    }, 1000);
+  }
+};
+
+// Function to stop timer if no users are connected
+const stopGlobalTimer = () => {
+  if (globalTimerInterval && Object.keys(connections).length === 0) {
+    console.log("Stopping global timer - no users connected");
+    clearInterval(globalTimerInterval);
+    globalTimerInterval = null;
+    game.resetTimer();
+  }
+};
+
 io.on("connection", (socket) => {
   const username = String(socket.handshake.query["username"]);
   const uuid: string = uuidv4();
   console.log(`${username} connected with uuid ${uuid}`);
+  
   connections[uuid] = socket;
   users[uuid] = {
     username,
@@ -271,18 +296,19 @@ io.on("connection", (socket) => {
     },
   };
 
-  console.log(users);
-
-  // Send current game state to new player
+  startGlobalTimer(); // Start timer if it's not running
   socket.emit("gameState", game.getGameState());
+
+  // Handle disconnect
+  socket.on("disconnect", () => {
+    handleClose(uuid);
+    stopGlobalTimer(); // Stop timer if no users left
+  });
 
   // Handle cursor movement
   socket.on("cursor_movement", (cursorPosition: User["state"]) =>
     handleMovement(cursorPosition, uuid)
   );
-
-  // Handle disconnect
-  socket.on("disconnect", () => handleClose(uuid));
 
   // Handle left clicks
   socket.on("click", (move: Coord) => {
@@ -301,6 +327,11 @@ io.on("connection", (socket) => {
   socket.on("reset", () => {
     game = new GameState(config);
     io.emit("gameState", game.getGameState());
+  });
+  socket.on("gameEnd", () => {
+    if (globalTimerInterval) {
+      clearInterval(globalTimerInterval);
+    }
   });
 });
 
