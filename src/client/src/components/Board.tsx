@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { throttle } from "lodash";
+import { add, min, set, throttle } from "lodash";
 import { Cursor } from "./Cursor";
 import { Cell } from "./Cell";
 import { GameState, Coord, BoardProps, Users } from "../types/clientTypes";
@@ -18,6 +18,67 @@ export function Board({ username, socket }: BoardProps) {
   const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE);
   const boardRef = useRef<HTMLDivElement>(null);
 
+  const Ref = useRef<NodeJS.Timeout | null>(null);
+
+  // The state for our timer
+  const [timer, setTimer] = useState("00:00:00");
+
+
+
+  const startTimer = (e:Date) => {
+
+    let newTime = new Date()
+    let hours = newTime.getHours() - e.getHours()
+    let minutes = newTime.getMinutes() - e.getMinutes()
+    let seconds =newTime.getSeconds() - e.getSeconds()
+          // update the timer
+          // check if less than 10 then we need to
+          // add '0' at the beginning of the variable
+      setTimer(
+          `${hours}
+          :
+          ${minutes}
+          :
+          ${seconds}`
+      );
+  };
+  const addSecond = (e:Number) =>{
+
+  }
+
+  const clearTimer = (e:Date) => {
+      // If you adjust it you should also need to
+      // adjust the Endtime formula we are about
+      // to code next
+      
+
+      // If you try to remove this line the
+      // updating of timer Variable will be
+      // after 1000ms or 1sec
+      if (Ref.current) clearInterval(Ref.current);
+      let count = 0
+      
+      const id = setInterval(() => {
+        // Calculate hours, minutes, and seconds
+        const hours = Math.floor(count / 3600);
+        const minutes = Math.floor((count / 60) % 60);
+        const seconds = count % 60;
+
+        // Update the timer in `hh:mm:ss` format
+        setTimer(
+            `${hours.toString().padStart(2, "0")}:${minutes
+                .toString()
+                .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+        );
+
+        count += 1; // Increment the counter
+      }, 1000);
+      Ref.current = id;
+  };
+
+  useEffect(() => {
+    clearTimer(new Date());
+}, []);
   // Socket event handlers
   const handleGameState = useCallback((newState: GameState) => {
     setGameState(newState);
@@ -113,6 +174,7 @@ export function Board({ username, socket }: BoardProps) {
 
   return (
     <div className="board-container">
+      {timer}
       <div className="game-controls">
         <div className="flags-counter">🚩 {gameState.flagsLeft}</div>
         <button className="reset-button" onClick={handleReset}>
