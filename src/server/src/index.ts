@@ -131,7 +131,7 @@ app.post("/login", async (req, res) => {
 const io = new Server(server, {
   cors: {
     // origin: "http://localhost:5173",
-    origin: ['*', "https://coopminesweeper.netlify.app"],
+    origin: ['http://localhost:5173', "https://coopminesweeper.netlify.app"],
     methods: ["GET", "POST"],
   },
 });
