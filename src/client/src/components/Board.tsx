@@ -9,6 +9,7 @@ const INITIAL_GAME_STATE: GameState = {
   board: [],
   status: 0,
   flagsLeft: 40,
+  elapsedTime: 0
 };
 
 const THROTTLE_MS = 50;
@@ -18,74 +19,42 @@ export function Board({ username, socket }: BoardProps) {
   const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE);
   const boardRef = useRef<HTMLDivElement>(null);
 
-  const Ref = useRef<NodeJS.Timeout | null>(null);
+  //const Ref = useRef<NodeJS.Timeout | null>(null);
 
   // The state for our timer
   const [timer, setTimer] = useState("00:00:00");
 
 
-
-  const startTimer = (e:Date) => {
-
-    let newTime = new Date()
-    let hours = newTime.getHours() - e.getHours()
-    let minutes = newTime.getMinutes() - e.getMinutes()
-    let seconds =newTime.getSeconds() - e.getSeconds()
-          // update the timer
-          // check if less than 10 then we need to
-          // add '0' at the beginning of the variable
-      setTimer(
-          `${hours}
-          :
-          ${minutes}
-          :
-          ${seconds}`
-      );
-  };
-  const addSecond = (e:Number) =>{
-
+  const formatTime = (seconds: number): void => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds / 60) % 60);
+    const secondss = seconds % 60;
+    setTimer(
+      `${hours.toString().padStart(2, "0")}:${minutes
+          .toString()
+          .padStart(2, "0")}:${secondss.toString().padStart(2, "0")}`
+  );
   }
-
-  const clearTimer = (e:Date) => {
-      // If you adjust it you should also need to
-      // adjust the Endtime formula we are about
-      // to code next
-      
-
-      // If you try to remove this line the
-      // updating of timer Variable will be
-      // after 1000ms or 1sec
-      if (Ref.current) clearInterval(Ref.current);
-      let count = 0
-      
-      const id = setInterval(() => {
-        // Calculate hours, minutes, and seconds
-        const hours = Math.floor(count / 3600);
-        const minutes = Math.floor((count / 60) % 60);
-        const seconds = count % 60;
-
-        // Update the timer in `hh:mm:ss` format
-        setTimer(
-            `${hours.toString().padStart(2, "0")}:${minutes
-                .toString()
-                .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
-        );
-
-        count += 1; // Increment the counter
-      }, 1000);
-      Ref.current = id;
-  };
-
   useEffect(() => {
-    clearTimer(new Date());
-}, []);
-  // Socket event handlers
+    const timeoutId = setTimeout(() => {
+      console.log("Game State:", gameState); // Add this debug log
+      formatTime(gameState.elapsedTime);
+
+    }, 1000); // Wait 1 second before formatting elapsedTime
+
+    // Cleanup the timeout when the component unmounts or gameState.elapsedTime changes
+    return () => clearTimeout(timeoutId);
+}, [gameState.elapsedTime]); // Dependency array
+
   const handleGameState = useCallback((newState: GameState) => {
     setGameState(newState);
+    formatTime(newState.elapsedTime);
+
   }, []);
 
   const handleUsersUpdate = useCallback((newUserData: Users) => {
     setUsers(newUserData);
+
   }, []);
 
   // throttle mouse movement

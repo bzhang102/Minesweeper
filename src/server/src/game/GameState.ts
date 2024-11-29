@@ -18,7 +18,8 @@ export class GameState {
   private flagsLeft: number;
   private readonly width: number;
   private readonly height: number;
-
+  private startTime: number | null = null;  // Add this
+  private elapsedTime: number = 0;
   // Array of all possible directions for neighboring cells
   private static readonly DIRECTIONS: Direction[] = [
     { dx: -1, dy: -1 },
@@ -275,7 +276,25 @@ export class GameState {
     }
     return null;
   }
+  public startTimer(): void {
+    this.startTime = Date.now();
+    this.elapsedTime = 0
+  }
 
+  public getElapsedTime(): number {
+    // if (!this.startTime) return 0;
+    // return Math.floor((Date.now() - this.startTime) / 1000);
+    //console.log(this.elapsedTime)
+    this.elapsedTime += 1
+    console.log(this.elapsedTime)
+
+    return this.elapsedTime;
+  }
+
+  public resetTimer(): void {
+    this.startTime = null;
+    this.elapsedTime = 0;
+  }
   public getGameState() {
     return {
       board: this.board.map((row) =>
@@ -289,6 +308,7 @@ export class GameState {
       ),
       status: this.status,
       flagsLeft: this.flagsLeft,
+      elapsedTime: this.elapsedTime
     };
   }
 }

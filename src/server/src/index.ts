@@ -147,6 +147,7 @@ app.get("/", (req, res) => {
 
 let config = { width: 16, height: 16, mines: 40 };
 let game = new GameState(config);
+let globalTimerInterval: NodeJS.Timeout | null = null;
 
 const connections: Dictionary<Socket> = {};
 const users: Dictionary<User> = {};
@@ -167,10 +168,33 @@ const handleClose = (uuid: string) => {
   io.emit("users", users);
 };
 
+// Function to start timer if it's not already running
+const startGlobalTimer = () => {
+  if (!globalTimerInterval) {
+    console.log("Starting global timer");
+    game.startTimer();
+    globalTimerInterval = setInterval(() => {
+      game.getElapsedTime();
+      io.emit("gameState", game.getGameState());
+    }, 1000);
+  }
+};
+
+// Function to stop timer if no users are connected
+const stopGlobalTimer = () => {
+  if (globalTimerInterval && Object.keys(connections).length === 0) {
+    console.log("Stopping global timer - no users connected");
+    clearInterval(globalTimerInterval);
+    globalTimerInterval = null;
+    game.resetTimer();
+  }
+};
+
 io.on("connection", (socket) => {
   const username = String(socket.handshake.query["username"]);
   const uuid: string = uuidv4();
   console.log(`${username} connected with uuid ${uuid}`);
+  
   connections[uuid] = socket;
   users[uuid] = {
     username,
@@ -180,18 +204,19 @@ io.on("connection", (socket) => {
     },
   };
 
-  console.log(users);
-
-  // Send current game state to new player
+  startGlobalTimer(); // Start timer if it's not running
   socket.emit("gameState", game.getGameState());
+
+  // Handle disconnect
+  socket.on("disconnect", () => {
+    handleClose(uuid);
+    stopGlobalTimer(); // Stop timer if no users left
+  });
 
   // Handle cursor movement
   socket.on("cursor_movement", (cursorPosition: User["state"]) =>
     handleMovement(cursorPosition, uuid)
   );
-
-  // Handle disconnect
-  socket.on("disconnect", () => handleClose(uuid));
 
   // Handle left clicks
   socket.on("click", (move: Coord) => {
@@ -210,6 +235,11 @@ io.on("connection", (socket) => {
   socket.on("reset", () => {
     game = new GameState(config);
     io.emit("gameState", game.getGameState());
+  });
+  socket.on("gameEnd", () => {
+    if (globalTimerInterval) {
+      clearInterval(globalTimerInterval);
+    }
   });
 });
 
