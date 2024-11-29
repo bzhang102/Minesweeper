@@ -71,9 +71,15 @@ function AppContent(): JSX.Element {
         navigate('/dashboard');
       } else {
         console.error('Login failed:', data);
+        throw new Error(data.error || 'The username or password is incorrect, please try again');
       }
     } catch (error) {
       console.error('Error during login:', error);
+      if (error instanceof Error) {
+        throw error;
+      } else {
+        throw new Error('Account creation failed.');
+      }
     }
   };
 
@@ -100,8 +106,11 @@ function AppContent(): JSX.Element {
       }
     } catch (error) {
       console.error('Error during account creation:', error);
-      throw error; // Re-throw the error for the caller to handle (e.g., UI component)
-    }
+      if (error instanceof Error) {
+        throw error;
+      } else {
+        throw new Error('Account creation failed.');
+      }    }
   };
   
 

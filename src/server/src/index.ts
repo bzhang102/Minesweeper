@@ -51,6 +51,7 @@ app.post("/create-account", async (req, res) => {
       error: "Error: Username Already Taken",
     });
   }
+  //else{console.log("SUCESSSSSSSSS")}
 
   try {
     const query = `INSERT INTO persons (username, userpassword, accesstoken) VALUES ($1, $2, $3) RETURNING *`;
