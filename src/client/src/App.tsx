@@ -8,7 +8,7 @@ import { io, Socket } from "socket.io-client";
 const SERVER_URL = "localhost:3000";
 
 function App() {
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState("Anonymous");
   const [room, setRoom] = useState("");
   const [socket, setSocket] = useState<Socket | null>(null);
 
