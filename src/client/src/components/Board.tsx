@@ -13,26 +13,6 @@ const INITIAL_GAME_STATE: GameState = {
 
 const THROTTLE_MS = 120;
 
-/* const throttle = (fn: Function, throttle: number) => {
- *   let lastTime = 0;
- *   return (...args: any[]) => {
- *     const now = new Date().getTime();
- *     if (now - lastTime < throttle) return;
- *     lastTime = now;
- *     fn(...args);
- *   };
- * }; */
-
-const debounce = (fn: Function, delay: number) => {
-  let id: any;
-  return (...args: any[]) => {
-    if (id) clearTimeout(id);
-    id = setTimeout(() => {
-      fn(...args);
-    }, delay);
-  };
-};
-
 export function Board({ socket, uuid }: BoardProps) {
   const [users, setUsers] = useState<Users>({});
   const [rows, setRows] = useState(0);
@@ -62,11 +42,6 @@ export function Board({ socket, uuid }: BoardProps) {
       setIsFirstConnection(false);
     }
   }, []);
-
-  /* const handleUUID = useCallback((newUUID: String) => {
-   *   console.log(`UUID is ${newUUID}`);
-   *   setUUID(newUUID);
-   * }, []); */
 
   const handleUsersUpdate = useCallback((newUserData: Users) => {
     setUsers(newUserData);
@@ -131,17 +106,14 @@ export function Board({ socket, uuid }: BoardProps) {
 
   // Game state and users setup
   useEffect(() => {
-    /* console.log("Scanning for uuid"); */
     socket.on("gameState", handleGameState);
     socket.on("users", handleUsersUpdate);
-    /* socket.on("uuid", handleUUID); */
 
     return () => {
       socket.off("gameState");
       socket.off("users");
-      /* socket.off("uuid"); */
     };
-  }, [socket /* handleUUID */, , handleGameState, handleUsersUpdate]);
+  }, [socket, handleGameState, handleUsersUpdate]);
 
   // Mouse movement setup - now using window event listener
   useEffect(() => {
@@ -192,7 +164,6 @@ export function Board({ socket, uuid }: BoardProps) {
             {gameState.status === 1 ? "You Won! 🎉" : "Game Over! 💥"}
           </div>
         )}
-
         <div className="cursors-container">{renderCursors()}</div>
       </div>
     </div>
