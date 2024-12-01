@@ -35,12 +35,32 @@ const debounce = (fn: Function, delay: number) => {
 
 export function Board({ socket, uuid }: BoardProps) {
   const [users, setUsers] = useState<Users>({});
+  const [rows, setRows] = useState(0);
+  const [columns, setColumns] = useState(0);
   const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE);
+  const [isFirstConnection, setIsFirstConnection] = useState<boolean>(true);
   const boardRef = useRef<HTMLDivElement>(null);
 
+  const gameBoardStyle: React.CSSProperties = {
+    background: "#ddd",
+    padding: "1px",
+    display: "grid",
+    gridTemplateColumns: `repeat(${columns}, 30px)`,
+    gridTemplateRows: `repeat(${rows}, 30px)`,
+    gap: "1px",
+    position: "relative",
+  };
   // Socket event handlers
   const handleGameState = useCallback((newState: GameState) => {
     setGameState(newState);
+    // The following code is probably useless
+    // But I hate the idea that the app would continuously set the rows and cols
+    // Even though those variables would never change.
+    if (isFirstConnection) {
+      setRows(newState.board.length);
+      setColumns(newState.board[0].length);
+      setIsFirstConnection(false);
+    }
   }, []);
 
   /* const handleUUID = useCallback((newUUID: String) => {
@@ -152,7 +172,7 @@ export function Board({ socket, uuid }: BoardProps) {
         </button>
       </div>
 
-      <div ref={boardRef} className="game-board">
+      <div ref={boardRef} className="game-board" style={gameBoardStyle}>
         {gameState.board.map((row, y) =>
           row.map((cell, x) => (
             <Cell
