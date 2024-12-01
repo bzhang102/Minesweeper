@@ -51,8 +51,6 @@ app.post("/check-lobbies", (req, res) => {
 });
 
 // Whenever a new room is created, create a game instance for players in that room
-// TODO Rewrite gamestore generation code to be a post request endpoint
-// instead so it can receive game difficulty settings
 app.post("/create-lobby", (req, res) => {
   const { gameConfig, room } = req.body;
   console.log(req.body);

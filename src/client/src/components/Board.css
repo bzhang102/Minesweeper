@@ -40,8 +40,6 @@
   background: #ddd;
   padding: 1px;
   display: grid;
-  grid-template-columns: repeat(24, 30px);
-  grid-template-rows: repeat(16, 30px);
   gap: 1px;
   position: relative;
 }
