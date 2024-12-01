@@ -1,5 +1,5 @@
 import { useState, FormEvent, ChangeEvent } from "react";
-import "./Login.css";
+import "../css/Login.css";
 
 interface LoginProps {
   onSubmit: (username: string) => void;

@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Cursor } from "./Cursor";
 import { Cell } from "./Cell";
-import { GameState, Coord, BoardProps, Users } from "../types/clientTypes";
+import { GameState, Coord, BoardProps, Users } from "../../types/clientTypes";
 import { throttle } from "lodash";
-import "./Board.css";
+import "../css/Board.css";
 
 const INITIAL_GAME_STATE: GameState = {
   board: [],
@@ -33,9 +33,7 @@ export function Board({ socket, uuid }: BoardProps) {
   // Socket event handlers
   const handleGameState = useCallback((newState: GameState) => {
     setGameState(newState);
-    // The following code is probably useless
-    // But I hate the idea that the app would continuously set the rows and cols
-    // Even though those variables would never change.
+
     if (isFirstConnection) {
       setRows(newState.board.length);
       setColumns(newState.board[0].length);
@@ -51,8 +49,8 @@ export function Board({ socket, uuid }: BoardProps) {
   const updatePositionThrottled = useRef(
     throttle(
       (position: object) => socket.emit("cursor_movement", position),
-      THROTTLE_MS,
-    ),
+      THROTTLE_MS
+    )
   );
 
   // Mouse movement handler
@@ -69,7 +67,7 @@ export function Board({ socket, uuid }: BoardProps) {
         y,
       });
     },
-    [updatePositionThrottled],
+    [updatePositionThrottled]
   );
 
   // Game action handlers
@@ -77,14 +75,14 @@ export function Board({ socket, uuid }: BoardProps) {
     (coord: Coord) => {
       socket.emit("click", coord);
     },
-    [socket],
+    [socket]
   );
 
   const handleRightClick = useCallback(
     (coord: Coord) => {
       socket.emit("flag", coord);
     },
-    [socket],
+    [socket]
   );
 
   const handleReset = useCallback(() => {
@@ -95,7 +93,7 @@ export function Board({ socket, uuid }: BoardProps) {
   useEffect(() => {
     socket.on("connect", () => console.log("Connected to server!"));
     socket.on("connect_error", (error: any) =>
-      console.log("Connection error:", error),
+      console.log("Connection error:", error)
     );
 
     return () => {
@@ -154,7 +152,7 @@ export function Board({ socket, uuid }: BoardProps) {
               onLeftClick={handleLeftClick}
               onRightClick={handleRightClick}
             />
-          )),
+          ))
         )}
 
         {gameState.status !== 0 && (

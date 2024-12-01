@@ -23,7 +23,6 @@ export function CreateRoom({ setRoom }: CreateRoomProps) {
 
   async function generateLobby(gameConfig: GameSettings, lobby: string) {
     console.log("generating lobby");
-    //TODO change this localhost url with the deployed server url
     return fetch("http://localhost:3000/create-lobby", {
       method: "POST",
       headers: {

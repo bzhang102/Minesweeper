@@ -1,10 +1,4 @@
-// Cursor.tsx
 import { motion } from "framer-motion";
-/* import { useCallback, useRef, useLayoutEffect } from "react";
- * import { usePerfectCursor } from "../hooks/usePerfectCursors";
- * import { CursorProps, CursorPath } from "../types/clientTypes";
- *  */
-// Spring animated cursor
 
 interface CursorProps {
   color: string;

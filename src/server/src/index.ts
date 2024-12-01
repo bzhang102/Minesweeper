@@ -4,21 +4,35 @@ import cors from "cors";
 import { Server } from "socket.io";
 import { v4 as uuidv4 } from "uuid";
 import http from "http";
-import { GameState, LobbyState } from "./game/GameState";
+import { GameState } from "./game/GameState";
 import { Coord } from "./types/gameTypes";
+import { LobbyState } from "./types/serverTypes";
 import { User, Dictionary } from "./types/serverTypes";
 
-const PORT = process.env.PORT || 3000; // Add this line
+// Server configuration
+const PORT = process.env.PORT || 3000;
 const app = express();
 const server = http.createServer(app);
+
+// Initialize Socket.IO with CORS configuration
 const io = new Server(server, {
   cors: {
-    // origin: "http://localhost:5173",
-    origin: "https://coopminesweeper.netlify.app",
+    origin: "http://localhost:5173",
+    // origin: "https://coopminesweeper.netlify.app",
     methods: ["GET", "POST"],
   },
 });
 
+// Validate room ID
+const isFourDigits = (room: string) => {
+  return /^\d{4}$/.test(room);
+};
+
+// Main data structures for game state management
+const gameStore: Dictionary<LobbyState> = {};
+let lobbies: Set<string> = new Set();
+
+// Heath check endpoint
 app.get("/", (req, res) => {
   res.send({
     status: "ok",
@@ -27,27 +41,20 @@ app.get("/", (req, res) => {
   });
 });
 
-// let config = { width: 24, height: 16, mines: 70 };
-
-const isFourDigits = (room: string) => {
-  return /^\d{4}$/.test(room);
-};
-// Hold game states across all rooms.
-// The room ID will be the game's key.
-const gameStore: Dictionary<LobbyState> = {};
-let lobbies: Set<string> = new Set();
-
+// Endpoint to check if a lobby exists
 app.post("/check-lobbies", (req, res) => {
   const { lobby } = req.body;
   const isInSet = lobbies.has(lobby);
   res.json({ isInSet });
 });
 
-// Whenever a new room is created, create a game instance for players in that room
+// Endpoint to create a new game lobby
 app.post("/create-lobby", (req, res) => {
   const { gameConfig, room } = req.body;
   console.log(req.body);
   console.log(`Creating Room ${room}`);
+
+  // Initialize game state for the new room
   gameStore[room] = {
     board: new GameState(gameConfig),
     config: gameConfig,
@@ -62,30 +69,23 @@ app.post("/create-lobby", (req, res) => {
   });
 });
 
-// io.of("/").adapter.on("create-room", (room) => {
-//   // Prevent rooms created when a browser connects to the server to create game instances
-//   if (!isFourDigits(room)) return;
-//   gameStore[room] = {
-//     board: new GameState(config),
-//     users: {},
-//     connections: {},
-//   };
-//   lobbies.add(room);
-// });
-
+// Handler for cursor movement updates
 const handleMovement = (
   cursorPosition: User["state"],
   uuid: string,
   room: string
 ) => {
+  // Update user's cursor position in game state
   gameStore[room].users[uuid] = {
     ...gameStore[room].users[uuid],
     state: cursorPosition,
   };
 
+  // Broadcast updated user positions to all clients in room
   io.to(room).emit("users", gameStore[room].users);
 };
 
+// Handler for closed connection
 const handleClose = (uuid: string, room: string) => {
   console.log(`Disconnecting ${gameStore[room].users[uuid].uuid}`);
   delete gameStore[room].connections[uuid];
@@ -94,20 +94,31 @@ const handleClose = (uuid: string, room: string) => {
   io.to(room).emit("users", gameStore[room].users);
 };
 
+// Socket.IO connection handler
 io.on("connection", (socket) => {
+  // Extract room ID from connection query
   const room = String(socket.handshake.query["room"]);
+  // Generate unique ID for new user
   const uuid: string = uuidv4();
 
   socket.join(room);
 
+  if (!gameStore[room]) {
+    console.log(`Room ${room} does not exist. Disconnecting client.`);
+    socket.emit("error", "Room does not exist");
+    socket.disconnect(true);
+    return;
+  }
+
+  // Get reference to game instance for this room
   let game = gameStore[room].board;
 
   console.log(`User connected with uuid ${uuid} to room ${room}`);
   console.log(lobbies);
+  // Store user's connection and initialize their state as off screen
   gameStore[room].connections[uuid] = socket;
   gameStore[room].users[uuid] = {
     uuid,
-    // This makes cursor default position off of board
     state: {
       x: -30,
       y: -30,
@@ -117,32 +128,27 @@ io.on("connection", (socket) => {
   console.log(gameStore);
   console.log(gameStore[room].users);
 
-  // Send current game state to new player
+  // Send initial game state to new user
   socket.emit("gameState", game.getGameState());
-  // Send UUID of current player to client
   console.log(`UUID is ${uuid} and room is ${room}`);
   socket.emit("uuid", uuid);
   socket.emit("lobbies", lobbies);
 
-  // Handle cursor movement
+  // Various Event Listeners
+
   socket.on("cursor_movement", (cursorPosition: User["state"]) => {
     handleMovement(cursorPosition, uuid, room);
   });
 
-  // Handle disconnect
   socket.on("disconnect", () => handleClose(uuid, room));
 
-  // Handle left clicks
   socket.on("click", (move: Coord) => {
     game.click(move);
-    // Broadcast new state to all players
     io.to(room).emit("gameState", game.getGameState());
   });
 
-  // Handle right clicks (flags)
   socket.on("flag", (move: Coord) => {
     game.flag(move);
-    // Broadcast new state to all players
     io.to(room).emit("gameState", game.getGameState());
   });
 
@@ -153,6 +159,7 @@ io.on("connection", (socket) => {
   });
 });
 
+// On server start
 server.listen(3000, () => {
   console.log("Server running on port 3000");
 });
