@@ -26,14 +26,18 @@ export function Login({ onSubmit }: LoginProps) {
     };
 
     const newRoom = generateRandomFourDigits();
-    const response = await fetch("http://localhost:3000/create-lobby", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        gameConfig: gameConfigs[difficulty as keyof typeof gameConfigs],
-        room: newRoom,
-      }),
-    });
+    // const response = await fetch("http://localhost:3000/create-lobby", {
+    const response = await fetch(
+      "https://minesweeper-server-o2fa.onrender.com",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          gameConfig: gameConfigs[difficulty as keyof typeof gameConfigs],
+          room: newRoom,
+        }),
+      }
+    );
 
     if (response.ok) {
       onSubmit(username, newRoom);
@@ -50,11 +54,15 @@ export function Login({ onSubmit }: LoginProps) {
     const trimmedRoom = room.trim();
     if (!trimmedUsername || !trimmedRoom) return;
 
-    const response = await fetch("http://localhost:3000/check-lobbies", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lobby: trimmedRoom }),
-    });
+    // const response = await fetch("http://localhost:3000/check-lobbies", {
+    const response = await fetch(
+      "https://minesweeper-server-o2fa.onrender.com",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lobby: trimmedRoom }),
+      }
+    );
     const data = await response.json();
 
     if (!data.isInSet) {

@@ -4,8 +4,8 @@ import "./App.css";
 import { Login } from "./components/tsx/Login";
 import { io, Socket } from "socket.io-client";
 
-// const SERVER_URL = "https://minesweeper-server-o2fa.onrender.com";
-const SERVER_URL = "localhost:3000";
+const SERVER_URL = "https://minesweeper-server-o2fa.onrender.com";
+// const SERVER_URL = "localhost:3000";
 
 function App() {
   const [username, setUsername] = useState("Anonymous");
