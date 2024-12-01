@@ -1,15 +1,10 @@
-import { BoardConfig, Coord, Cell } from "../types/gameTypes";
-
-enum GameStatus {
-  PLAYING,
-  WON,
-  LOST,
-}
-
-type Direction = {
-  dx: number;
-  dy: number;
-};
+import {
+  BoardConfig,
+  Coord,
+  Cell,
+  GameStatus,
+  Direction,
+} from "../types/gameTypes";
 
 export class GameState {
   private readonly board: Cell[][];
@@ -113,6 +108,20 @@ export class GameState {
   private handleFirstClick(move: Coord): void {
     if (this.board[move.y][move.x].isMine) {
       this.moveMine(move);
+    }
+
+    for (const dir of GameState.DIRECTIONS) {
+      const newX = move.x + dir.dx;
+      const newY = move.y + dir.dy;
+
+      if (!this.isValidMove({ x: newX, y: newY })) {
+        continue;
+      }
+
+      const adjacentCell = this.board[newY][newX];
+      if (adjacentCell.isMine) {
+        this.moveMine({ x: newX, y: newY });
+      }
     }
     this.firstClick = false;
   }

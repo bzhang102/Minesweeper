@@ -1,5 +1,5 @@
-import type { Cell as CellType, Coord } from "../types/clientTypes";
-import "./Cell.css";
+import type { Cell as CellType, Coord } from "../../types/clientTypes";
+import "../css/Cell.css";
 
 interface CellProps {
   data: CellType;

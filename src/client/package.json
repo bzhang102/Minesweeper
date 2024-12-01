@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "framer-motion": "^11.12.0",
     "lodash": "^4.17.21",
     "lodash.throttle": "^4.1.1",
     "perfect-cursors": "^1.0.5",
