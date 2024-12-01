@@ -36,14 +36,6 @@
   background: #444;
 }
 
-.game-board {
-  background: #ddd;
-  padding: 1px;
-  display: grid;
-  gap: 1px;
-  position: relative;
-}
-
 .game-status {
   position: absolute;
   top: 50%;
