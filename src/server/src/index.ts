@@ -14,13 +14,21 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 const server = http.createServer(app);
 
-// Initialize Socket.IO with CORS configuration
+// Configure Socket.IO with CORS
+const corsOptions = {
+  origin: "http://localhost:5173",
+  // origin: "https://coopminesweeper.netlify.app",
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173",
-    // origin: "https://coopminesweeper.netlify.app",
-    methods: ["GET", "POST"],
-  },
+  cors: corsOptions,
 });
 
 // Validate room ID
@@ -160,6 +168,6 @@ io.on("connection", (socket) => {
 });
 
 // On server start
-server.listen(3000, () => {
-  console.log("Server running on port 3000");
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
