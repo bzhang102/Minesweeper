@@ -59,7 +59,8 @@ export interface CursorPath {
 // Board Types
 export interface BoardProps {
   socket: any;
-  uuid: string;
+  username: string;
+  room: string;
 }
 
 export interface User {

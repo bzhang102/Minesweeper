@@ -19,7 +19,8 @@
 }
 
 .flags-counter,
-.reset-button {
+.reset-button,
+.room-id {
   padding: 8px 16px;
   font-size: 14px;
   font-weight: 500;
@@ -51,14 +52,8 @@
 
 .won { background: #e8f5e9; }
 
-<<<<<<< Updated upstream
 .lost { background: #fbe9e7; }
-||||||| Stash base
+
 .game-status.lost {
   color: #c92a2a;
 }
-=======
-.game-status.lost {
-  color: #c92a2a;
-}
->>>>>>> Stashed changes

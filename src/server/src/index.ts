@@ -104,6 +104,8 @@ const handleClose = (uuid: string, room: string) => {
 
 // Socket.IO connection handler
 io.on("connection", (socket) => {
+  // Extract username from connection query
+  const username = String(socket.handshake.query["username"]);
   // Extract room ID from connection query
   const room = String(socket.handshake.query["room"]);
   // Generate unique ID for new user
@@ -127,6 +129,7 @@ io.on("connection", (socket) => {
   gameStore[room].connections[uuid] = socket;
   gameStore[room].users[uuid] = {
     uuid,
+    username,
     state: {
       x: -30,
       y: -30,

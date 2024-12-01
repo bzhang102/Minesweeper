@@ -13,8 +13,9 @@ const INITIAL_GAME_STATE: GameState = {
 
 const THROTTLE_MS = 120;
 
-export function Board({ socket, uuid }: BoardProps) {
+export function Board({ socket, username, room }: BoardProps) {
   const [users, setUsers] = useState<Users>({});
+  const [userColors, setUserColors] = useState<{ [uuid: string]: string }>({});
   const [rows, setRows] = useState(0);
   const [columns, setColumns] = useState(0);
   const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE);
@@ -30,6 +31,21 @@ export function Board({ socket, uuid }: BoardProps) {
     gap: "1px",
     position: "relative",
   };
+
+  // Hash uuid to get user's color
+  const getColorFromUuid = (uuid: string) => {
+    let hash = 0;
+    for (let i = 0; i < uuid.length; i++) {
+      hash = uuid.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    let color = "#";
+    for (let i = 0; i < 3; i++) {
+      const value = (hash >> (i * 8)) & 0xff;
+      color += ("00" + value.toString(16)).substr(-2);
+    }
+    return color;
+  };
+
   // Socket event handlers
   const handleGameState = useCallback((newState: GameState) => {
     setGameState(newState);
@@ -123,20 +139,38 @@ export function Board({ socket, uuid }: BoardProps) {
 
   // Render cursors for other users
   const renderCursors = useCallback(() => {
-    return Object.entries(users).map(([user_uuid, user]) => {
-      if (user.uuid === uuid) {
-        return;
+    return Object.entries(users).map(([userUuid, user]) => {
+      console.log(users);
+      if (user.username == username) {
+        return null;
       }
       return (
-        <Cursor key={user_uuid} color="red" x={user.state.x} y={user.state.y} />
+        <Cursor
+          key={userUuid}
+          color={userColors[userUuid]}
+          x={user.state.x}
+          y={user.state.y}
+        />
       );
     });
+  }, [users, userColors, username]);
+
+  // User color differentiation
+  useEffect(() => {
+    const newUserColors = { ...userColors };
+    Object.keys(users).forEach((userUuid) => {
+      if (!newUserColors[userUuid]) {
+        newUserColors[userUuid] = getColorFromUuid(userUuid);
+      }
+    });
+    setUserColors(newUserColors);
   }, [users]);
 
   return (
     <div className="board-container">
       <div className="game-controls">
         <div className="flags-counter">🚩 {gameState.flagsLeft}</div>
+        <div className="room-id">Room: {room}</div> {/* Display the room ID */}
         <button className="reset-button" onClick={handleReset}>
           New Game
         </button>

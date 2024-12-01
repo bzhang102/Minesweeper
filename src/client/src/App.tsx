@@ -32,7 +32,7 @@ function App() {
       <div className="app-container">
         <div className="game-container">
           <h1 className="game-title">Co-op Minesweeper</h1>
-          <Board uuid={username} socket={socket} />
+          <Board username={username} socket={socket} room={room} />
         </div>
       </div>
     );

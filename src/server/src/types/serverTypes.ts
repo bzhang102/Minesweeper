@@ -4,6 +4,7 @@ import { Socket } from "socket.io";
 
 export interface User {
   uuid: string;
+  username: string;
   state: {
     x: number;
     y: number;
