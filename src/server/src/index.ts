@@ -59,7 +59,6 @@ app.post("/check-lobbies", (req, res) => {
 // Endpoint to create a new game lobby
 app.post("/create-lobby", (req, res) => {
   const { gameConfig, room } = req.body;
-  console.log(req.body);
   console.log(`Creating Room ${room}`);
 
   // Initialize game state for the new room
@@ -98,7 +97,6 @@ const handleClose = (uuid: string, room: string) => {
   console.log(`Disconnecting ${gameStore[room].users[uuid].uuid}`);
   delete gameStore[room].connections[uuid];
   delete gameStore[room].users[uuid];
-  console.log(gameStore[room].users);
   io.to(room).emit("users", gameStore[room].users);
 };
 
@@ -124,7 +122,6 @@ io.on("connection", (socket) => {
   let game = gameStore[room].board;
 
   console.log(`User connected with uuid ${uuid} to room ${room}`);
-  console.log(lobbies);
   // Store user's connection and initialize their state as off screen
   gameStore[room].connections[uuid] = socket;
   gameStore[room].users[uuid] = {
@@ -135,9 +132,6 @@ io.on("connection", (socket) => {
       y: -30,
     },
   };
-
-  console.log(gameStore);
-  console.log(gameStore[room].users);
 
   // Send initial game state to new user
   socket.emit("gameState", game.getGameState());

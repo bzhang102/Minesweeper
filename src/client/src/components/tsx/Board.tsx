@@ -140,7 +140,6 @@ export function Board({ socket, username, room }: BoardProps) {
   // Render cursors for other users
   const renderCursors = useCallback(() => {
     return Object.entries(users).map(([userUuid, user]) => {
-      console.log(users);
       if (user.username == username) {
         return null;
       }
