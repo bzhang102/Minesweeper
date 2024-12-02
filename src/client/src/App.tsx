@@ -3,9 +3,7 @@ import { Board } from "./components/tsx/Board";
 import "./App.css";
 import { Login } from "./components/tsx/Login";
 import { io, Socket } from "socket.io-client";
-
-const SERVER_URL = "https://minesweeper-server-o2fa.onrender.com";
-// const SERVER_URL = "localhost:3000";
+import { config } from "./config";
 
 function App() {
   const [username, setUsername] = useState("Anonymous");
@@ -19,7 +17,9 @@ function App() {
 
   useEffect(() => {
     if (username && room) {
-      const newSocket = io(`${SERVER_URL}?username=${username}&room=${room}`);
+      const newSocket = io(
+        `${config.SERVER_URL}?username=${username}&room=${room}`
+      );
       setSocket(newSocket);
       return () => {
         newSocket.disconnect();

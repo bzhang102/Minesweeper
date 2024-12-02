@@ -8,6 +8,7 @@ import { GameState } from "./game/GameState";
 import { Coord } from "./types/gameTypes";
 import { LobbyState } from "./types/serverTypes";
 import { User, Dictionary } from "./types/serverTypes";
+import { serverConfig } from "./config";
 
 // Server configuration
 const PORT = process.env.PORT || 3000;
@@ -16,8 +17,7 @@ const server = http.createServer(app);
 
 // Configure Socket.IO with CORS
 const corsOptions = {
-  // origin: "http://localhost:5173",
-  origin: "https://coopminesweeper.netlify.app",
+  origin: serverConfig.CLIENT_URL,
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
