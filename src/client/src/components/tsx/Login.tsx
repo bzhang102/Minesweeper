@@ -28,7 +28,7 @@ export function Login({ onSubmit }: LoginProps) {
     const newRoom = generateRandomFourDigits();
     // const response = await fetch("http://localhost:3000/create-lobby", {
     const response = await fetch(
-      "https://minesweeper-server-o2fa.onrender.com",
+      "https://minesweeper-server-o2fa.onrender.com/create-lobby",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -56,7 +56,7 @@ export function Login({ onSubmit }: LoginProps) {
 
     // const response = await fetch("http://localhost:3000/check-lobbies", {
     const response = await fetch(
-      "https://minesweeper-server-o2fa.onrender.com",
+      "https://minesweeper-server-o2fa.onrender.com/check-lobbies",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
