@@ -35,28 +35,29 @@ nix develop
 ## Development Workflow
 
 ### Branch Structure
-- `main` - Main development branch
+- `main` - Deployed branch
+- `dev` - Development branch
 - `feature/[feature-name]` - Individual feature branches
 
 ### Workflow Steps
 #### 1. Starting New Work
-- Create a new branch from `main`
+- Create a new branch from `dev`
 - Use naming convention: `feature/game-logic`, `feature/multiplayer`, etc.
 ```bash
-git checkout main
-git pull origin main
+git checkout dev
+git pull origin dev
 git checkout -b feature/your-feature
 ```
 #### 2. During Development
 - Commit regularly with clear messages
-- Keep pulls from main to stay updated
+- Keep pulls from dev to stay updated
 ```bash
 git commit -m "descriptive message"
-git pull origin main
+git pull origin dev
 ```
 #### 3. Submitting Changes
 - Push your feature branch
-- Create a Pull Request (PR) to main
+- Create a Pull Request (PR) to dev
 - ***GET A REVIEW BEFORE MERGING***
 
 ```bash
