@@ -1,5 +1,5 @@
 // src/server/src/index.ts
-import express from "express";
+import express, { Request, Response } from "express";
 import cors from "cors";
 import { Server } from "socket.io";
 import { v4 as uuidv4 } from "uuid";
