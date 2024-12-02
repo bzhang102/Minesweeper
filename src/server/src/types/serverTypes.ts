@@ -1,5 +1,6 @@
+import { Request } from "express";
 import { GameState } from "../game/GameState";
-import { GameSettings } from "./gameTypes";
+import { GameSettings, Coord, BoardConfig } from "./gameTypes";
 import { Socket } from "socket.io";
 
 export interface User {
@@ -21,3 +22,32 @@ export type LobbyState = {
   connections: Dictionary<Socket>;
   users: Dictionary<User>;
 };
+
+export interface ClientToServerEvents {
+  cursor_movement: (cursorPosition: User["state"]) => void;
+  click: (move: Coord) => void;
+  flag: (move: Coord) => void;
+  reset: () => void;
+  disconnect: () => void;
+}
+
+export interface ServerToClientEvents {
+  gameState: (state: ReturnType<GameState["getGameState"]>) => void;
+  uuid: (id: string) => void;
+  lobbies: (lobbies: Set<string>) => void;
+  users: (users: Dictionary<User>) => void;
+  error: (message: string) => void;
+}
+
+export interface CheckLobbyRequest extends Request {
+  body: {
+    lobby: string;
+  };
+}
+
+export interface CreateLobbyRequest extends Request {
+  body: {
+    gameConfig: BoardConfig;
+    room: string;
+  };
+}
