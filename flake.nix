@@ -4,23 +4,31 @@
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
         devShells.default = pkgs.mkShell {
-          packages = with pkgs; [ 
+          packages = with pkgs; [
             nodejs
             postgresql
+            tmux
           ];
           shellHook = ''
             echo "Hello Devs"
-            
+
             # Set up PostgreSQL environment variables
-            export PGDATA="$PWD/src/server/.postgres"
+            export PGDATA="$PWD/.postgres"
             export DATABASE_URL="postgresql:///minesweeper_db"
+            export PGHOST=/tmp
 
             # Initialize PostgreSQL if it hasn't been initialized yet
             if [ ! -d $PGDATA ]; then
@@ -30,7 +38,7 @@
 
             # Start PostgreSQL if it's not already running
             if ! pg_ctl status -D $PGDATA; then
-              pg_ctl -D $PGDATA -l "$PGDATA/postgresql.log" start
+              pg_ctl -D $PGDATA -l "$PGDATA/postgresql.log" -o "-k/tmp" start
 
               # Wait for PostgreSQL to start
               until pg_isready; do
@@ -44,10 +52,9 @@
                 echo "Created minesweeper_db database"
                 
                 # Apply schema.sql if it exists
-                if [ -f "$PWD/src/server/schema.sql" ]; then
-                  echo "$PWD/src/server/schema.sql" 
+                if [ -f "$PWD/schema.sql" ]; then
                   echo "Applying schema from schema.sql..."
-                  psql -d minesweeper_db -f "$PWD/src/server/schema.sql"
+                  psql -d minesweeper_db -f "$PWD/schema.sql"
                   echo "Schema applied successfully."
                 else
                   echo "No schema.sql file found. Skipping schema setup."
@@ -57,11 +64,16 @@
 
             echo "PostgreSQL is running with database: minesweeper_db"
 
+            # Start tmux session with npm run dev in client and server
+            tmux new-session -d -s minesweeper
+            tmux send-keys -t minesweeper 'cd src/client && npm run dev' C-m
+            tmux split-window -h
+            tmux send-keys -t minesweeper 'cd src/server && npm run dev' C-m
+
             # Clean up PostgreSQL on exit
-            trap "pg_ctl -D $PGDATA stop" EXIT
+            trap "pg_ctl -D $PGDATA stop;pkill tmux:\ server" EXIT
           '';
         };
       }
     );
 }
-

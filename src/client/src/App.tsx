@@ -1,52 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { Board } from "./components/tsx/Board";
+import "./App.css";
+import { Login } from "./components/tsx/Login";
 import { io, Socket } from "socket.io-client";
-import Login from './Login';
-import CreateAccount from './CreateAccount';
-import { Board } from "./components/Board";
-import './App.css';
 
-const SERVER_URL = "https://minesweeper-server-o2fa.onrender.com";
+// const SERVER_URL = "https://minesweeper-server-o2fa.onrender.com";
+const SERVER_URL = "localhost:3000";
 
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
-}
-
-interface LoginResponse {
-  ok: boolean;
-  username?: string;
-  [key: string]: any;
-}
-
-interface DashboardProps {
-  username: string;
-}
-
-const Dashboard: React.FC<DashboardProps> = ({ username }) => {
+function App() {
+  const [username, setUsername] = useState("Anonymous");
+  const [room, setRoom] = useState("");
   const [socket, setSocket] = useState<Socket | null>(null);
 
+  const handleLogin = (newUsername: string, newRoom: string) => {
+    setUsername(newUsername);
+    setRoom(newRoom);
+  };
+
   useEffect(() => {
-    const newSocket = io(`http://localhost:3000/?username=${username}`);
-    setSocket(newSocket);
-    return () => {
-      newSocket.disconnect();
-    };
-  }, [username]);
+    if (username && room) {
+      const newSocket = io(`${SERVER_URL}?username=${username}&room=${room}`);
+      setSocket(newSocket);
+      return () => {
+        newSocket.disconnect();
+      };
+    }
+  }, [username, room]);
 
-  if (!socket) {
-    return <div>Connecting to game server...</div>;
-  }
-
-  return (
-    <div className="app-container">
-      <div className="game-container">
-        <h1 className="game-title">Co-op Minesweeper</h1>
-        <Board username={username} socket={socket} />
+  if (username && room && socket) {
+    return (
+      <div className="app-container">
+        <div className="game-container">
+          <h1 className="game-title">Co-op Minesweeper</h1>
+          <Board username={username} socket={socket} room={room} />
+        </div>
       </div>
+<<<<<<< HEAD
     </div>
   );
 };
@@ -137,6 +126,12 @@ function App(): JSX.Element {
       <AppContent />
     </Router>
   );
+=======
+    );
+  } else {
+    return <Login onSubmit={handleLogin} />;
+  }
+>>>>>>> 00fe8c90c064ddf773f576d35c44218083c76bec
 }
 
 export default App;

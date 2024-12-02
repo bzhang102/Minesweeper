@@ -17,3 +17,20 @@ export interface Cell {
   adjMines: number;
   isFlagged: boolean;
 }
+
+export enum GameStatus {
+  PLAYING,
+  WON,
+  LOST,
+}
+
+export type Direction = {
+  dx: number;
+  dy: number;
+};
+
+export type GameSettings = {
+  width: number;
+  height: number;
+  mines: number;
+};
