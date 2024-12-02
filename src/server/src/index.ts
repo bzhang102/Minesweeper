@@ -148,11 +148,13 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => handleClose(uuid, room));
 
   socket.on("click", (move: Coord) => {
+    game = gameStore[room].board;
     game.click(move);
     io.to(room).emit("gameState", game.getGameState());
   });
 
   socket.on("flag", (move: Coord) => {
+    game = gameStore[room].board;
     game.flag(move);
     io.to(room).emit("gameState", game.getGameState());
   });
