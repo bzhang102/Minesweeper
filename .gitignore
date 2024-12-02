@@ -48,8 +48,5 @@ Thumbs.db
 
 # Postgres
 .postgres/
-<<<<<<< HEAD
 # Local Netlify folder
 .netlify
-=======
->>>>>>> 00fe8c90c064ddf773f576d35c44218083c76bec

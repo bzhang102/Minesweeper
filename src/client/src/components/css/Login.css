@@ -1,143 +1,168 @@
-.login-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background-color: #f5f5f5;
-  padding: 20px;
+.container {
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    margin-top: 200px;
+    width: 600px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    border-radius: 15px;
+    padding: 30px 20px;
+}
+  
+.header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    margin-top: 30px;
+}
+  
+.text {
+    color: #333; /* Darker text color */
+    font-size: 48px;
+    font-weight: 700;
+}
+  
+.underline {
+    width: 61px;
+    height: 6px;
+    background: #333; /* Darker underline */
+    border-radius: 9px;
+}
+  
+.input {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+  
+.input input {
+    display: flex;
+    align-items: center;
+    margin: auto;
+    width: 480px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid #333; /* Darker border color */
+    border-radius: 6px;
+    padding: 0 15px;
+    font-size: 19px;
+    color: #333; /* Darker input text */
+}
+  
+.input input::placeholder {
+    color: rgba(51, 51, 51, 0.7); /* Darker placeholder */
+}
+  
+.input input:focus {
+    outline: none;
+    border: 1px solid #555; /* Slightly darker focus border */
+}
+  
+.submit-container {
+    display: flex; /* Use flexbox for alignment */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    margin-top: 20px; /* Add some spacing from the inputs */
+}
+  
+.submit {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 220px;
+    height: 59px;
+    color: #333; /* Darker text on the button */
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50px;
+    font-size: 19px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+  
+.submit:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
-.login-card {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
-}
-
-.login-card h1 {
-  font-size: 1.8rem;
-  text-align: center;
-  margin-bottom: 1rem;
-  color: #333;
-}
-
-.login-card p {
-  text-align: center;
-  color: #666;
-  margin-bottom: 2rem;
-}
-
-.login-card form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.login-card input {
-  display: flex;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: border-color 0.2s;
-}
-
-.login-card input:focus {
-  display: flex;
-  outline: none;
-  border-color: #4a9eff;
-  box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
-}
-
-.difficulty-selection {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.difficulty-selection h2 {
-  font-size: 1.2rem;
-  text-align: center;
-  color: #333;
-  margin: 1rem 0;
-}
-
-.difficulty-buttons {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: center;
-}
-
-.difficulty-buttons button {
-  padding: 0.75rem 1.5rem;
-  background-color: #4a9eff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.difficulty-buttons button:hover:not(:disabled) {
-  background-color: #3182ce;
-}
-
-.difficulty-buttons button:disabled {
-  background-color: #ccc;
+/* Disabled button styling */
+.submit:disabled {
+  background-color: #ccc; /* Light gray for disabled state */
   cursor: not-allowed;
 }
 
-.login-card button {
-  padding: 0.75rem;
-  background-color: #4a9eff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
+/* Add to App.css or make sure body has this background */
+body {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    margin: 0;
+    min-height: 100vh;
 }
-
-.login-card button:hover:not(:disabled) {
-  background-color: #3182ce;
-}
-
-.login-card button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+  
+@media (max-width: 650px) {
+    .container {
+        width: 90%;
+        padding: 20px;
+    }
+  
+    .input input {
+        width: 90%;
+    }
+  
+    .submit-container {
+        flex-direction: column;
+        align-items: center;
+    }
 }
 
 .error-message {
-  color: #e53e3e;
-  text-align: center;
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
+    color: #ff3333;
+    text-align: center;
+    margin-bottom: 0rem;
+    margin-top: 1rem;
+    font-size: 0.9rem;
 }
-
-.switch-mode-link {
-  text-align: center;
-  margin-top: 1rem;
-}
-
-.switch-mode-link a {
-  color: #4a9eff;
-  text-decoration: none;
-  font-size: 0.9rem;
-}
-
-.switch-mode-link a:hover {
-  text-decoration: underline;
-}
-
-@media (max-width: 480px) {
-  .login-card {
-    padding: 1.5rem;
-  }
   
-  .login-card h1 {
-    font-size: 1.5rem;
-  }
+input:disabled,
+button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.switch-page {
+    margin-top: 10px;
+    text-align: center;
+}
+  
+.switch-page a {
+    color: #333; /* Darker color for the link */
+    text-decoration: none;
+    font-weight: bold;
+}
+  
+.switch-page a:hover {
+    text-decoration: underline;
+}
+
+.submit {
+    /* ... existing properties ... */
+    border: 1px solid #333; /* Changed from rgba(255, 255, 255, 0.2) to a darker color */
+    /* ... rest of the properties ... */
+}
+
+.switch-page {
+    margin-top: 20px; /* Added more top margin for better spacing */
+    text-align: center;
+    color: #333; /* Added darker text color */
+}
+
+.switch-page a {
+    color: #333; /* Changed link color to match */
+    text-decoration: none;
+    font-weight: bold;
 }

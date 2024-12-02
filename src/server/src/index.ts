@@ -8,20 +8,23 @@ import { Coord } from "./types/gameTypes";
 import { User, Dictionary } from "./types/serverTypes";
 import cors from "cors";
 import { Client } from 'pg';
+import { serverConfig } from "./config";
 
-const PORT = process.env.PORT || 3000; // Add this line
+const PORT =  3000; // Add this line
 const app = express();
-app.use(cors({
-  origin: ['http://localhost:5173', 'https://coopminesweeper.netlify.app'],
-  methods: ['GET', 'POST', 'OPTIONS'],
+const server = http.createServer(app);
+
+// Configure Socket.IO with CORS
+const corsOptions = {
+  origin: serverConfig.CLIENT_URL,
+  methods: ["GET", "POST", "OPTIONS"],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
-}));
+};
 app.options('*', cors());
 // Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-const server = http.createServer(app);
 
 const client = new Client({
   host: 'localhost',
@@ -223,8 +226,8 @@ app.post("/login", async (req, res) => {
 
 const io = new Server(server, {
   cors: {
-    // origin: "http://localhost:5173",
-    origin: ['http://localhost:5173', "https://coopminesweeper.netlify.app"],
+    origin: "http://localhost:5173",
+    // origin: ['http://localhost:5173', "https://coopminesweeper.netlify.app"],
     methods: ["GET", "POST"],
   },
 });
@@ -289,6 +292,7 @@ io.on("connection", (socket) => {
   
   connections[uuid] = socket;
   users[uuid] = {
+    uuid,
     username,
     state: {
       x: -30,

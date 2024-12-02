@@ -17,6 +17,7 @@
     "perfect-cursors": "^1.0.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-router-dom": "^6.x.x",
     "socket.io-client": "^4.7.2"
   },
   "devDependencies": {
