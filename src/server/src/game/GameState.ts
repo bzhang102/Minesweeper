@@ -1,3 +1,4 @@
+import { join } from "path";
 import {
   BoardConfig,
   Coord,

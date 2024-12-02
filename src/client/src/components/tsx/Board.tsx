@@ -1,7 +1,13 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Cursor } from "./Cursor";
 import { Cell } from "./Cell";
-import { GameState, Coord, BoardProps, Users } from "../../types/clientTypes";
+import {
+  GameState,
+  Coord,
+  BoardProps,
+  Users,
+  GameStatus,
+} from "../../types/clientTypes";
 import { throttle } from "lodash";
 import "../css/Board.css";
 
@@ -182,6 +188,7 @@ export function Board({ socket, username, room }: BoardProps) {
               key={`${x}-${y}`}
               data={cell}
               coord={{ x, y }}
+              over={gameState.status != GameStatus.PLAYING}
               onLeftClick={handleLeftClick}
               onRightClick={handleRightClick}
             />
