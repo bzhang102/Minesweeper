@@ -95,11 +95,12 @@ function AppContent(): JSX.Element {
           method: "GET",
           credentials: "include",
         });
-
+        console.log(response)
         const data = await response.json();
         if (data.ok) {
           setAuthenticatedUser(data.username);
-          if (window.location.pathname === '/login' || 
+          if (window.location.pathname === '/game' || 
+              window.location.pathname === '/login' ||
               window.location.pathname === '/create-account' || 
               window.location.pathname === '/') {
             navigate("/join-room");
