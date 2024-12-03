@@ -96,37 +96,48 @@ app.post("/create-account", async (req, res) => {
   }
 });
 
-// New route to update quickest solve time
+// Update the best time route to handle different difficulties
 app.post("/update-best-time", async (req, res) => {
   console.log("Best time update")
-  const { username, solveTime, partners } = req.body;
+  const { username, solveTime, partners, difficulty } = req.body;
 
   // Validate input
-  if (!username || solveTime === undefined || !Array.isArray(partners)) {
+  if (!username || solveTime === undefined || !Array.isArray(partners) || !difficulty) {
     return res.status(400).json({
       error: "Invalid input parameters",
     });
   }
 
+  // Validate difficulty level
+  if (!['easy', 'medium', 'hard'].includes(difficulty)) {
+    return res.status(400).json({
+      error: "Invalid difficulty level",
+    });
+  }
+
   try {
-    // Query to find the current best time for the user
+    // Create column names based on difficulty
+    const timeColumn = `${difficulty}_solve_time`;
+    const partnersColumn = `${difficulty}_solve_partners`;
+
+    // Query to find the current best time for the user at this difficulty
     const currentBestQuery = `
-      SELECT quickest_solve_time 
+      SELECT ${timeColumn}
       FROM persons 
       WHERE username = $1
     `;
     const currentBestResult = await client.query(currentBestQuery, [username]);
 
     // If no current best time or new time is faster, update
-    const currentBestTime = currentBestResult.rows[0]?.quickest_solve_time;
+    const currentBestTime = currentBestResult.rows[0]?.[timeColumn];
     if (currentBestTime === null || solveTime < currentBestTime) {
       const updateQuery = `
         UPDATE persons 
         SET 
-          quickest_solve_time = $2, 
-          solve_partners = $3 
+          ${timeColumn} = $2, 
+          ${partnersColumn} = $3 
         WHERE username = $1 
-        RETURNING quickest_solve_time, solve_partners
+        RETURNING ${timeColumn}, ${partnersColumn}
       `;
       
       const updateResult = await client.query(updateQuery, [
@@ -137,8 +148,9 @@ app.post("/update-best-time", async (req, res) => {
 
       return res.status(200).json({
         message: "Best time updated successfully",
-        bestTime: updateResult.rows[0].quickest_solve_time,
-        partners: updateResult.rows[0].solve_partners,
+        bestTime: updateResult.rows[0][timeColumn],
+        partners: updateResult.rows[0][partnersColumn],
+        difficulty: difficulty,
         updated: true
       });
     }
@@ -147,6 +159,7 @@ app.post("/update-best-time", async (req, res) => {
     res.status(200).json({
       message: "Current best time not beaten",
       bestTime: currentBestTime,
+      difficulty: difficulty,
       updated: false
     });
   } catch (error) {
@@ -157,22 +170,42 @@ app.post("/update-best-time", async (req, res) => {
   }
 });
 
-// New route to get user's best time
+// Update the get best time route to handle different difficulties
 app.get("/get-best-time/:username", async (req, res) => {
   const { username } = req.params;
+  const { difficulty } = req.query;
 
   try {
-    const query = `
-      SELECT quickest_solve_time, solve_partners 
-      FROM persons 
-      WHERE username = $1
-    `;
+    let query;
+    if (difficulty && ['easy', 'medium', 'hard'].includes(difficulty as string)) {
+      // If difficulty is specified, return only that difficulty's time and partners
+      query = `
+        SELECT 
+          ${difficulty}_solve_time as solve_time,
+          ${difficulty}_solve_partners as solve_partners
+        FROM persons 
+        WHERE username = $1
+      `;
+    } else {
+      // If no difficulty specified, return all difficulties
+      query = `
+        SELECT 
+          easy_solve_time,
+          medium_solve_time,
+          hard_solve_time,
+          easy_solve_partners,
+          medium_solve_partners,
+          hard_solve_partners
+        FROM persons 
+        WHERE username = $1
+      `;
+    }
+    
     const result = await client.query(query, [username]);
 
     if (result.rows.length > 0) {
       res.status(200).json({
-        bestTime: result.rows[0].quickest_solve_time,
-        partners: result.rows[0].solve_partners
+        data: result.rows[0]
       });
     } else {
       res.status(404).json({
