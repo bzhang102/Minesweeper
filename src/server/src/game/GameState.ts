@@ -11,6 +11,7 @@ export class GameState {
   private readonly board: Cell[][];
   private status: GameStatus = GameStatus.PLAYING;
   private firstClick = true;
+  private squaresRevealedInMove: number = 0;
   private flagsLeft: number;
   private readonly width: number;
   private readonly height: number;
@@ -67,16 +68,18 @@ export class GameState {
     }
   }
 
-  public click(move: Coord): boolean {
+  public click(move: Coord): number {
     if (!this.isValidMove(move)) {
-      return false;
+      return 0;
     }
 
     const cell = this.board[move.y][move.x];
 
     if (cell.isFlagged || this.status !== GameStatus.PLAYING) {
-      return false;
+      return 0;
     }
+
+    this.squaresRevealedInMove = 0;
 
     if (this.firstClick) {
       this.handleFirstClick(move);
@@ -84,7 +87,7 @@ export class GameState {
 
     if (cell.isMine) {
       this.endGame(move);
-      return false;
+      return 0;
     }
 
     if (!cell.isRevealed) {
@@ -96,7 +99,7 @@ export class GameState {
       this.handleNumberClick(move);
     }
 
-    return true;
+    return this.squaresRevealedInMove;
   }
 
   private isValidMove(coord: Coord): boolean {
@@ -253,6 +256,7 @@ export class GameState {
     }
 
     cell.isRevealed = true;
+    this.squaresRevealedInMove++;
 
     if (cell.adjMines === 0) {
       GameState.DIRECTIONS.forEach((dir) => {
