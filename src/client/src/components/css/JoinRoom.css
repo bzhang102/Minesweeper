@@ -5,6 +5,7 @@
   min-height: 100vh;
   background-color: #f5f5f5;
   padding: 20px;
+  font-family: Arial, sans-serif;
 }
 
 .login-card {
@@ -14,34 +15,41 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
+  font-family: Arial, sans-serif;
 }
 
 .login-card h1 {
   font-size: 1.8rem;
   text-align: center;
   margin-bottom: 1rem;
-  color: #333;
+  color: #333333; /* Darker text color */
+  font-family: Arial, sans-serif;
+  font-weight: bold;
 }
 
 .login-card p {
   text-align: center;
-  color: #666;
+  color: #666666; /* Slightly darker text color */
   margin-bottom: 2rem;
+  font-family: Arial, sans-serif;
 }
 
 .login-card form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  font-family: Arial, sans-serif;
 }
 
 .login-card input {
   display: flex;
   padding: 0.75rem;
-  border: 1px solid #ddd;
+  border: 1px solid #dddddd;
   border-radius: 4px;
   font-size: 1rem;
   transition: border-color 0.2s;
+  font-family: Arial, sans-serif;
+  color: #333333; /* Darker text color */
 }
 
 .login-card input:focus {
@@ -55,30 +63,36 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  font-family: Arial, sans-serif;
 }
 
 .difficulty-selection h2 {
   font-size: 1.2rem;
   text-align: center;
-  color: #333;
+  color: #333333; /* Darker text color */
   margin: 1rem 0;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
 }
 
 .difficulty-buttons {
   display: flex;
   gap: 0.75rem;
   justify-content: center;
+  font-family: Arial, sans-serif;
 }
 
 .difficulty-buttons button {
   padding: 0.75rem 1.5rem;
   background-color: #4a9eff;
-  color: white;
+  color: #ffffff; /* White text color */
   border: none;
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.2s;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
 }
 
 .difficulty-buttons button:hover:not(:disabled) {
@@ -86,19 +100,22 @@
 }
 
 .difficulty-buttons button:disabled {
-  background-color: #ccc;
+  background-color: #cccccc;
   cursor: not-allowed;
+  color: #666666; /* Slightly darker disabled text color */
 }
 
 .login-card button {
   padding: 0.75rem;
   background-color: #4a9eff;
-  color: white;
+  color: #ffffff; /* White text color */
   border: none;
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.2s;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
 }
 
 .login-card button:hover:not(:disabled) {
@@ -106,26 +123,31 @@
 }
 
 .login-card button:disabled {
-  background-color: #ccc;
+  background-color: #cccccc;
   cursor: not-allowed;
+  color: #666666; /* Slightly darker disabled text color */
 }
 
 .error-message {
-  color: #e53e3e;
+  color: #e53e3e; /* Slightly darker error message color */
   text-align: center;
   font-size: 0.9rem;
   margin-top: 0.5rem;
+  font-family: Arial, sans-serif;
 }
 
 .switch-mode-link {
   text-align: center;
   margin-top: 1rem;
+  font-family: Arial, sans-serif;
 }
 
 .switch-mode-link a {
   color: #4a9eff;
   text-decoration: none;
   font-size: 0.9rem;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
 }
 
 .switch-mode-link a:hover {

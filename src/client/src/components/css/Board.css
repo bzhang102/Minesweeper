@@ -35,6 +35,42 @@
   background: #444;
 }
 
+.best-times-dropdown {
+  position: relative;
+}
+
+.difficulty-select {
+  padding: 8px 16px;
+  font-size: 14px;
+  background: #333;
+  color: white;
+  border: none;
+  appearance: none;
+  cursor: pointer;
+  height: 32px;
+}
+
+.difficulty-select:hover {
+  background: #444;
+}
+
+.best-time-details {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: #333;
+  color: white;
+  padding: 8px;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  font-size: 12px;
+}
+
+.best-time-details div {
+  margin: 4px 0;
+}
+
 .game-status {
   position: absolute;
   top: 50%;
@@ -54,4 +90,15 @@
 
 .game-status.lost {
   color: #c92a2a;
+}
+
+@keyframes popIn {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
 }
