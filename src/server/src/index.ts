@@ -352,7 +352,7 @@ const startGlobalTimer = () => {
     console.log("Starting global timer");
     game.startTimer();
     globalTimerInterval = setInterval(() => {
-      game.getElapsedTime();
+      //game.getElapsedTime();
       io.emit("gameState", game.getGameState());
     }, 1000);
   }
