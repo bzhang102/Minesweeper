@@ -1,4 +1,3 @@
-// src/server/src/index.ts
 import express, { Request, Response } from "express";
 import cors from "cors";
 import { Server, Socket } from "socket.io";
@@ -40,13 +39,8 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
   cors: corsOptions,
 });
 
-// Validate room ID
-const isFourDigits = (room: string): boolean => {
-  return /^\d{4}$/.test(room);
-};
-
 // Main data structures for game state management
-const gameStore: Dictionary<LobbyState> = {};
+const gameRooms: Dictionary<LobbyState> = {};
 let lobbies: Set<string> = new Set();
 
 // Heath check endpoint
@@ -71,7 +65,7 @@ app.post("/create-lobby", (req: CreateLobbyRequest, res: Response) => {
   console.log(`Creating Room ${room}`);
 
   // Initialize game state for the new room
-  gameStore[room] = {
+  gameRooms[room] = {
     board: new GameState(gameConfig),
     config: gameConfig,
     users: {},
@@ -85,6 +79,14 @@ app.post("/create-lobby", (req: CreateLobbyRequest, res: Response) => {
   });
 });
 
+// Helper for socket emissions
+const emitGameUpdate = (room: string) => {
+  io.to(room).emit("gameUpdate", {
+    gameState: gameRooms[room].board.getGameState(),
+    users: gameRooms[room].users,
+  });
+};
+
 // Handler for cursor movement updates
 const handleMovement = (
   cursorPosition: User["state"],
@@ -92,21 +94,26 @@ const handleMovement = (
   room: string
 ): void => {
   // Update user's cursor position in game state
-  gameStore[room].users[uuid] = {
-    ...gameStore[room].users[uuid],
+  gameRooms[room].users[uuid] = {
+    ...gameRooms[room].users[uuid],
     state: cursorPosition,
   };
 
-  // Broadcast updated user positions to all clients in room
-  io.to(room).emit("users", gameStore[room].users);
+  emitGameUpdate(room);
 };
 
 // Handler for closed connection
 const handleClose = (uuid: string, room: string): void => {
-  console.log(`Disconnecting ${gameStore[room].users[uuid].uuid}`);
-  delete gameStore[room].connections[uuid];
-  delete gameStore[room].users[uuid];
-  io.to(room).emit("users", gameStore[room].users);
+  console.log(`Disconnecting ${gameRooms[room].users[uuid].uuid}`);
+  delete gameRooms[room].connections[uuid];
+  delete gameRooms[room].users[uuid];
+
+  if (Object.keys(gameRooms[room].users).length === 0) {
+    lobbies.delete(room);
+    delete gameRooms[room];
+  }
+
+  emitGameUpdate(room);
 };
 
 // Socket.IO connection handler
@@ -122,7 +129,7 @@ io.on(
 
     socket.join(room);
 
-    if (!gameStore[room]) {
+    if (!gameRooms[room]) {
       console.log(`Room ${room} does not exist. Disconnecting client.`);
       socket.emit("error", "Room does not exist");
       socket.disconnect(true);
@@ -130,23 +137,23 @@ io.on(
     }
 
     // Get reference to game instance for this room
-    let game = gameStore[room].board;
+    let game = gameRooms[room].board;
 
     console.log(`User connected with uuid ${uuid} to room ${room}`);
     // Store user's connection and initialize their state as off screen
-    gameStore[room].connections[uuid] = socket;
-    gameStore[room].users[uuid] = {
+    gameRooms[room].connections[uuid] = socket;
+    gameRooms[room].users[uuid] = {
       uuid,
       username,
       state: {
         x: -30,
         y: -30,
       },
+      squaresCleared: 0,
     };
 
     // Send initial game state to new user
-    socket.emit("gameState", game.getGameState());
-    console.log(`UUID is ${uuid} and room is ${room}`);
+    emitGameUpdate(room);
     socket.emit("uuid", uuid);
     socket.emit("lobbies", lobbies);
 
@@ -158,21 +165,38 @@ io.on(
     socket.on("disconnect", () => handleClose(uuid, room));
 
     socket.on("click", (move: Coord) => {
-      game = gameStore[room].board;
-      game.click(move);
-      io.to(room).emit("gameState", game.getGameState());
+      game = gameRooms[room].board;
+      const squaresCleared = game.click(move);
+
+      if (squaresCleared > 0) {
+        gameRooms[room].users[uuid] = {
+          ...gameRooms[room].users[uuid],
+          squaresCleared:
+            (gameRooms[room].users[uuid].squaresCleared || 0) + squaresCleared,
+        };
+
+        emitGameUpdate(room);
+      }
     });
 
     socket.on("flag", (move: Coord) => {
-      game = gameStore[room].board;
+      game = gameRooms[room].board;
       game.flag(move);
-      io.to(room).emit("gameState", game.getGameState());
+      emitGameUpdate(room);
     });
 
     socket.on("reset", () => {
-      gameStore[room].board = new GameState(gameStore[room].config);
-      game = gameStore[room].board;
-      io.to(room).emit("gameState", game.getGameState());
+      gameRooms[room].board = new GameState(gameRooms[room].config);
+      game = gameRooms[room].board;
+
+      Object.keys(gameRooms[room].users).forEach((userUuid) => {
+        gameRooms[room].users[userUuid] = {
+          ...gameRooms[room].users[userUuid],
+          squaresCleared: 0,
+        };
+      });
+
+      emitGameUpdate(room);
     });
   }
 );
