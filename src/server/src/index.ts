@@ -16,6 +16,10 @@ import {
   CreateLobbyRequest,
 } from "./types/serverTypes";
 import { serverConfig } from "./config";
+import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
+
+const SECRET_KEY = "your_secret_key"; // Use an environment variable for production!
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -32,6 +36,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 const client = new Client({
@@ -67,13 +72,43 @@ app.post("/create-account", async (req, res) => {
     });
   }
   //else{console.log("SUCESSSSSSSSS")}
-
+  app.get("/auth-status", (req: Request, res: Response) => {
+    const token = req.cookies.auth_token;
+  
+    if (!token) {
+      return res.status(401).json({ ok: false, error: "Not authenticated" });
+    }
+  
+    try {
+      const decoded = jwt.verify(token, SECRET_KEY) as { id: string; username: string };
+      return res.status(200).json({ ok: true, username: decoded.username });
+    } catch (err) {
+      return res.status(401).json({ ok: false, error: "Invalid or expired token" });
+    }
+  });
   try {
     const query = `INSERT INTO persons (username, userpassword, accesstoken) VALUES ($1, $2, $3) RETURNING *`;
     const accessToken = "eee"; 
     const values = [username, password, accessToken];
 
     const result = await client.query(query, values);
+
+    const newUser = result.rows[0];
+
+    // Generate JWT
+    const token = jwt.sign(
+      { id: newUser.id, username: newUser.username }, // Payload
+      SECRET_KEY,
+      { expiresIn: "30d" } // Token expiration
+    );
+
+    // Set JWT as an HTTP-only cookie
+    res.cookie("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+      sameSite: "strict",
+      maxAge: 30 * 24 * 60 * 60 * 1000, // Cookie expires in 30 days
+    });
 
     res.status(201).json({
       message: "Account created successfully",
@@ -258,43 +293,92 @@ async function findPersonByUsernameAndPassword(username:string, password: string
     throw error; 
   }
 }
-app.post("/login", async (req, res) => {
+app.post("/login", async (req: Request, res: Response) => {
   const { username, password } = req.body;
 
   // Validate input
   if (!username || !password) {
     return res.status(400).json({
       error: "Username and password are required",
+      ok: false,
     });
   }
 
   try {
-    // Insert the user into the database
-    let t = await findPersonByUsernameAndPassword(username, password)
+    // Fetch user details from the database
+    const query = `SELECT * FROM persons WHERE username = $1`;
+    const result = await client.query(query, [username]);
 
-    // Respond only after the database operation succeeds
-    console.log(t)
-    if (t){
-      res.status(201).json({
-        message: "Account found",
-        user: t, // Send back the created user (excluding sensitive fields)
-        ok: true
+    if (result.rows.length === 0) {
+      return res.status(401).json({
+        error: "Invalid username or password",
+        ok: false,
       });
     }
-    else{
-      res.status(401).json({
-        message: "Account not found",
-        user: false, // Send back the created user (excluding sensitive fields)
+
+    const user = result.rows[0];
+
+    // Compare the hashed password (assuming passwords are hashed in the database)
+    const isPasswordValid = user.userpassword === password; 
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        error: "Invalid username or password",
+        ok: false,
       });
     }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: user.id, username: user.username },
+      SECRET_KEY,
+      { expiresIn: "30d" }
+    );
+
+    // Set HTTP-only cookie
+    res.cookie("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    });
+
+    res.status(200).json({
+      message: "Login successful",
+      ok: true,
+    });
   } catch (error) {
-    // General error response
+    console.error("Error during login:", error);
     res.status(500).json({
-      error: "internal error",
+      error: "Internal server error",
+      ok: false,
     });
   }
 });
 
+
+// Add this middleware to verify authentication
+const authenticateToken = (req: Request, res: Response, next: Function) => {
+  const token = req.cookies.auth_token;
+
+  if (!token) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(403).json({ error: "Invalid token" });
+  }
+};
+
+
+
+// Add an endpoint to check authentication status
+app.get("/check-auth", authenticateToken, (req, res) => {
+  res.json({ ok: true, user: req.user });
+});
 
 // Validate room ID
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
