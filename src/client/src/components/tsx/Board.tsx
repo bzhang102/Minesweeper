@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Cursor } from "./Cursor";
 import { Cell } from "./Cell";
+import { UserLegend } from "./Legend";
 import {
   GameState,
   Coord,
@@ -175,34 +176,46 @@ export function Board({ socket, username, room }: BoardProps) {
     <div className="board-container">
       <div className="game-controls">
         <div className="flags-counter">🚩 {gameState.flagsLeft}</div>
-        <div className="room-id">Room: {room}</div> {/* Display the room ID */}
+        <div className="room-id">Room: {room}</div>
         <button className="reset-button" onClick={handleReset}>
           New Game
         </button>
       </div>
 
-      <div ref={boardRef} className="game-board" style={gameBoardStyle}>
-        {gameState.board.map((row, y) =>
-          row.map((cell, x) => (
-            <Cell
-              key={`${x}-${y}`}
-              data={cell}
-              coord={{ x, y }}
-              over={gameState.status != GameStatus.PLAYING}
-              onLeftClick={handleLeftClick}
-              onRightClick={handleRightClick}
-            />
-          ))
-        )}
+      <div className="game-area">
+        <div ref={boardRef} className="game-board" style={gameBoardStyle}>
+          {gameState.board.map((row, y) =>
+            row.map((cell, x) => (
+              <Cell
+                key={`${x}-${y}`}
+                data={cell}
+                coord={{ x, y }}
+                over={gameState.status != GameStatus.PLAYING}
+                onLeftClick={handleLeftClick}
+                onRightClick={handleRightClick}
+              />
+            ))
+          )}
 
-        {gameState.status !== 0 && (
-          <div
-            className={`game-status ${gameState.status === 1 ? "won" : "lost"}`}
-          >
-            {gameState.status === 1 ? "You Won! 🎉" : "Game Over! 💥"}
-          </div>
-        )}
-        <div className="cursors-container">{renderCursors()}</div>
+          {/* Game status overlay */}
+          {gameState.status !== 0 && (
+            <div
+              className={`game-status ${
+                gameState.status === 1 ? "won" : "lost"
+              }`}
+            >
+              {gameState.status === 1 ? "You Won! 🎉" : "Game Over! 💥"}
+            </div>
+          )}
+
+          <div className="cursors-container">{renderCursors()}</div>
+        </div>
+
+        <UserLegend
+          users={users}
+          userColors={userColors}
+          currentUsername={username}
+        />
       </div>
     </div>
   );

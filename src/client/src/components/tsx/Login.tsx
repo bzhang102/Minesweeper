@@ -1,4 +1,3 @@
-// Login.tsx
 import { useState, FormEvent, MouseEvent } from "react";
 import "../css/Login.css";
 import { config } from "../../config";
