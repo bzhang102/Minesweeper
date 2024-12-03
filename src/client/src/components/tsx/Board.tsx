@@ -53,21 +53,6 @@ export function Board({ socket, username, room }: BoardProps) {
     return color;
   };
 
-  // Socket event handlers
-  const handleGameState = useCallback((newState: GameState) => {
-    setGameState(newState);
-
-    if (isFirstConnection) {
-      setRows(newState.board.length);
-      setColumns(newState.board[0].length);
-      setIsFirstConnection(false);
-    }
-  }, []);
-
-  const handleUsersUpdate = useCallback((newUserData: Users) => {
-    setUsers(newUserData);
-  }, []);
-
   // throttle mouse movement
   const updatePositionThrottled = useRef(
     throttle(
@@ -125,16 +110,26 @@ export function Board({ socket, username, room }: BoardProps) {
     };
   }, [socket]);
 
-  // Game state and users setup
+  // Socket updates
   useEffect(() => {
-    socket.on("gameState", handleGameState);
-    socket.on("users", handleUsersUpdate);
+    socket.on(
+      "gameUpdate",
+      (update: { gameState: GameState; users: Users }) => {
+        setGameState(update.gameState);
+        setUsers(update.users);
+
+        if (isFirstConnection) {
+          setRows(update.gameState.board.length);
+          setColumns(update.gameState.board[0].length);
+          setIsFirstConnection(false);
+        }
+      }
+    );
 
     return () => {
-      socket.off("gameState");
-      socket.off("users");
+      socket.off("gameUpdate");
     };
-  }, [socket, handleGameState, handleUsersUpdate]);
+  }, [socket, isFirstConnection]);
 
   // Mouse movement setup - now using window event listener
   useEffect(() => {
