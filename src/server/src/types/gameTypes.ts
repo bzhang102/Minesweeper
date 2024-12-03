@@ -1,4 +1,3 @@
-// src/server/src/types/gameTypes.ts
 export interface BoardConfig {
   width: number;
   height: number;

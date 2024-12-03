@@ -1,10 +1,10 @@
-interface ServerConfig {
+export interface ServerConfig {
   PORT: number;
   CLIENT_URL: string;
   NODE_ENV: string;
 }
 
-export const serverConfig: ServerConfig = {
+export const serverConfig = {
   PORT: Number(process.env.PORT) || 3000,
   CLIENT_URL: process.env.CLIENT_URL || "http://localhost:5173",
   NODE_ENV: process.env.NODE_ENV || "development",

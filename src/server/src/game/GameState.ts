@@ -15,7 +15,7 @@ export class GameState {
   private flagsLeft: number;
   private readonly width: number;
   private readonly height: number;
-  private startTime: number | null = null;  // Add this
+  private startTime: number | null = null; // Add this
   private elapsedTime: number = 0;
   // Array of all possible directions for neighboring cells
   private static readonly DIRECTIONS: Direction[] = [
@@ -36,7 +36,7 @@ export class GameState {
     this.board = this.initializeBoard(config);
     this.placeMines(config.mines);
     this.calculateAdjacentMines();
-    this.startTimer()
+    this.startTimer();
   }
 
   private initializeBoard(config: BoardConfig): Cell[][] {
@@ -293,18 +293,7 @@ export class GameState {
   }
   public startTimer(): void {
     this.startTime = Date.now();
-    
   }
-
-  // public getElapsedTime(): number {
-  //   // if (!this.startTime) return 0;
-  //   // return Math.floor((Date.now() - this.startTime) / 1000);
-  //   //console.log(this.elapsedTime)
-  //   this.elapsedTime += 1
-  //   console.log(this.elapsedTime)
-
-  //   return this.elapsedTime;
-  // }
 
   public resetTimer(): void {
     this.startTime = null;
@@ -322,7 +311,7 @@ export class GameState {
       ),
       status: this.status,
       flagsLeft: this.flagsLeft,
-      elapsedTime: this.startTime
+      elapsedTime: this.startTime,
     };
   }
 }
