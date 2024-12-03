@@ -70,6 +70,7 @@ export interface User {
     x: number;
     y: number;
   };
+  squaresCleared: number;
 }
 
 export interface Users {

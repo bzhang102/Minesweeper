@@ -22,12 +22,19 @@ export function UserLegend({
               className="user-color"
               style={{ backgroundColor: userColors[userUuid] }}
             />
-            <span className="user-name">
-              {user.username}
-              {user.username === currentUsername && (
-                <span className="you-label"> (you)</span>
-              )}
-            </span>
+            <div className="user-info">
+              <span className="user-name">
+                {user.username}
+                {user.username === currentUsername && (
+                  <span className="you-label"> (you)</span>
+                )}
+              </span>
+              <div className="user-stats">
+                <span className="squares-cleared">
+                  Cleared: {user.squaresCleared || 0}
+                </span>
+              </div>
+            </div>
           </div>
         ))}
       </div>
