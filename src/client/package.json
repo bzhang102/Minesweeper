@@ -21,11 +21,15 @@
     "socket.io-client": "^4.7.2"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
     "@types/lodash": "^4.17.13",
     "@types/lodash.throttle": "^4.1.9",
-    "@types/node": "^22.9.0",
+    "@types/node": "^22.10.1",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
+    "@types/socket.io": "^3.0.1",
+    "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^4.2.0",
     "eslint": "^8.53.0",
     "eslint-plugin-react-hooks": "^4.6.0",

@@ -1,10 +1,12 @@
 // src/server/src/index.ts
 import express, { Request, Response } from "express";
-import { Socket, Server } from "socket.io";
+import cors from "cors";
+import { Server, Socket } from "socket.io";
 import { v4 as uuidv4 } from "uuid";
 import http from "http";
 import { GameState } from "./game/GameState";
 import { Coord } from "./types/gameTypes";
+import { Client } from 'pg';
 import {
   LobbyState,
   User,
@@ -14,8 +16,6 @@ import {
   CheckLobbyRequest,
   CreateLobbyRequest,
 } from "./types/serverTypes";
-import cors from "cors";
-import { Client } from 'pg';
 import { serverConfig } from "./config";
 
 const PORT =  3000; // Add this line
@@ -45,8 +45,7 @@ client.connect()
   .then(() => console.log('Connected to PostgreSQL database'))
   .catch(err => console.error('Error connecting to database:', err));
 
-
-  // Validate room ID
+// Validate room ID
 const isFourDigits = (room: string): boolean => {
   return /^\d{4}$/.test(room);
 };
@@ -269,12 +268,10 @@ app.post("/login", async (req, res) => {
   }
 });
 
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173",
-    // origin: ['http://localhost:5173', "https://coopminesweeper.netlify.app"],
-    methods: ["GET", "POST"],
-  },
+
+// Validate room ID
+const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
+  cors: corsOptions,
 });
 
 app.get("/", (req, res) => {
