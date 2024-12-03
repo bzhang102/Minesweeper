@@ -79,9 +79,9 @@ export function Board({ socket, username, room }: BoardProps) {
           hard: result.data.hard_solve_time
         });
         setBestTimePartners({
-          easy: result.data.easy_solve_partners ? result.data.easy_solve_partners.split(',') : [],
-          medium: result.data.medium_solve_partners ? result.data.medium_solve_partners.split(',') : [],
-          hard: result.data.hard_solve_partners ? result.data.hard_solve_partners.split(',') : []
+          easy: result.data.easy_solve_partners || [],
+          medium: result.data.medium_solve_partners || [],
+          hard: result.data.hard_solve_partners || []
         });
       }
     } catch (error) {
