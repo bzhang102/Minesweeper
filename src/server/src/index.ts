@@ -44,11 +44,6 @@ client.connect()
   .then(() => console.log('Connected to PostgreSQL database'))
   .catch(err => console.error('Error connecting to database:', err));
 
-// Validate room ID
-const isFourDigits = (room: string): boolean => {
-  return /^\d{4}$/.test(room);
-};
-
 // Main data structures for game state management
 const gameRooms: Dictionary<LobbyState> = {};
 let lobbies: Set<string> = new Set();
