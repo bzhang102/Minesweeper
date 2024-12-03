@@ -90,7 +90,10 @@ export function Board({ socket, username, room }: BoardProps) {
   }, [username]);
 
   const updateBestTime = useCallback(async () => {
-    if (gameState.status === 1 && Object.keys(users).length > 1) {
+    console.log(Object.keys(users))
+    if (gameState.status === 1 && Object.keys(users).length >= 1) {
+      console.log("got in function")
+
       const partners = Object.values(users)
         .filter(user => user.username !== username)
         .map(user => user.username);
@@ -105,7 +108,7 @@ export function Board({ socket, username, room }: BoardProps) {
           },
           body: JSON.stringify({
             username,
-            solveTime: gameState.elapsedTime,
+            solveTime: Math.floor((Date.now() - start) / 1000),
             partners,
             difficulty
           })
@@ -127,22 +130,23 @@ export function Board({ socket, username, room }: BoardProps) {
     fetchBestTimes();
   }, [fetchBestTimes]);
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      formatTime(gameState.elapsedTime);
-      //console.log("Game State:", gameState.elapsedTime);
-      //console.log("Gayheze")
+  // useEffect(() => {
+  //   const timeoutId = setTimeout(() => {
+  //     formatTime(gameState.elapsedTime);
+  //     //console.log("Game State:", gameState.elapsedTime);
+  //     //console.log("Gayheze")
 
-    }, 1000);
+  //   }, 1000);
 
-    return () => clearTimeout(timeoutId);
-  }, [gameState.elapsedTime]);
+  //   return () => clearTimeout(timeoutId);
+  // }, [gameState.elapsedTime]);
 
   useEffect(() => {
     if (gameState.status === 1) {
+      console.log("got here")
       updateBestTime();
     }
-  }, [gameState.status, updateBestTime]);
+  }, [gameState.status]);
 
   const gameBoardStyle: React.CSSProperties = {
     background: "#ddd",
@@ -181,13 +185,15 @@ export function Board({ socket, username, room }: BoardProps) {
   }, []);
   useEffect(() => {
     const intervalId = setInterval(() => {
-
+      console.log(gameState.status)
+      if(gameState.status == GameStatus.PLAYING){
       formatTime(Math.floor((Date.now() - start) / 1000));
       console.log(gameState.elapsedTime);
+      }
     }, 1000);
   
     return () => clearInterval(intervalId); // Cleanup on unmount
-  }, [start, gameState.elapsedTime]);
+  }, [start, gameState.elapsedTime, gameState.status]);
 
 
   const handleUsersUpdate = useCallback((newUserData: Users) => {
