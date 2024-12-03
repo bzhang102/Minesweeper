@@ -27,9 +27,11 @@ class GameServer {
   constructor(config: ServerConfig) {
     this.config = config;
     this.app = express();
-    this.server = http.createServer(this.app);
     this.gameRooms = {};
     this.lobbies = new Set();
+
+    this.setupMiddleware();
+    this.server = http.createServer(this.app);
     this.io = new Server<ClientToServerEvents, ServerToClientEvents>(
       this.server,
       {
@@ -41,8 +43,6 @@ class GameServer {
         },
       }
     );
-
-    this.setupMiddleware();
     this.setupServer();
     this.setupErrorHandling();
   }
