@@ -35,6 +35,7 @@ export class GameState {
     this.board = this.initializeBoard(config);
     this.placeMines(config.mines);
     this.calculateAdjacentMines();
+    this.startTimer()
   }
 
   private initializeBoard(config: BoardConfig): Cell[][] {
@@ -288,22 +289,21 @@ export class GameState {
   }
   public startTimer(): void {
     this.startTime = Date.now();
-    this.elapsedTime = 0
+    
   }
 
-  public getElapsedTime(): number {
-    // if (!this.startTime) return 0;
-    // return Math.floor((Date.now() - this.startTime) / 1000);
-    //console.log(this.elapsedTime)
-    this.elapsedTime += 1
-    console.log(this.elapsedTime)
+  // public getElapsedTime(): number {
+  //   // if (!this.startTime) return 0;
+  //   // return Math.floor((Date.now() - this.startTime) / 1000);
+  //   //console.log(this.elapsedTime)
+  //   this.elapsedTime += 1
+  //   console.log(this.elapsedTime)
 
-    return this.elapsedTime;
-  }
+  //   return this.elapsedTime;
+  // }
 
   public resetTimer(): void {
     this.startTime = null;
-    this.elapsedTime = 0;
   }
   public getGameState() {
     return {
@@ -318,7 +318,7 @@ export class GameState {
       ),
       status: this.status,
       flagsLeft: this.flagsLeft,
-      elapsedTime: this.elapsedTime
+      elapsedTime: this.startTime
     };
   }
 }

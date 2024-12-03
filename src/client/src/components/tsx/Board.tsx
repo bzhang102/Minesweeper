@@ -29,6 +29,7 @@ export function Board({ socket, username, room }: BoardProps) {
   const [isFirstConnection, setIsFirstConnection] = useState<boolean>(true);
   const boardRef = useRef<HTMLDivElement>(null);
   const [timer, setTimer] = useState("00:00:00");
+  const [start, setStart] = useState(0);
 
   const formatTime = (seconds: number): void => {
     const hours = Math.floor(seconds / 3600);
@@ -71,8 +72,9 @@ export function Board({ socket, username, room }: BoardProps) {
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      console.log("Game State:", gameState);
-      formatTime(gameState.elapsedTime);
+      //console.log("Game State:", gameState.elapsedTime);
+      //console.log("Gayheze")
+
     }, 1000);
 
     return () => clearTimeout(timeoutId);
@@ -108,17 +110,29 @@ export function Board({ socket, username, room }: BoardProps) {
     }
     return color;
   };
-
+ 
   // Socket event handlers
   const handleGameState = useCallback((newState: GameState) => {
     setGameState(newState);
-
+    console.log(newState.elapsedTime)
+    setStart(newState.elapsedTime)
+    console.log(start)
     if (isFirstConnection) {
       setRows(newState.board.length);
       setColumns(newState.board[0].length);
       setIsFirstConnection(false);
     }
   }, []);
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+
+      formatTime(Math.floor((Date.now() - start) / 1000));
+      console.log(gameState.elapsedTime);
+    }, 1000);
+  
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, [start, gameState.elapsedTime]);
+
 
   const handleUsersUpdate = useCallback((newUserData: Users) => {
     setUsers(newUserData);
