@@ -107,6 +107,12 @@ const handleClose = (uuid: string, room: string): void => {
   console.log(`Disconnecting ${gameRooms[room].users[uuid].uuid}`);
   delete gameRooms[room].connections[uuid];
   delete gameRooms[room].users[uuid];
+
+  if (Object.keys(gameRooms[room].users).length === 0) {
+    lobbies.delete(room);
+    delete gameRooms[room];
+  }
+
   emitGameUpdate(room);
 };
 
