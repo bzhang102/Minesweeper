@@ -56,3 +56,11 @@ export interface CreateLobbyRequest extends Request {
     room: string;
   };
 }
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: any;
+    }
+  }
+}

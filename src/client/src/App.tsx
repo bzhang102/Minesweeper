@@ -32,39 +32,40 @@ function AppContent(): JSX.Element {
     try {
       const hashedPassword = await hashPassword(password);
       const response = await fetch(`${config.SERVER_URL}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        credentials: "include", // Include cookies
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password: hashedPassword }),
       });
-
-      const data: LoginResponse = await response.json();
+  
+      const data = await response.json();
       if (data.ok) {
         setAuthenticatedUser(username);
-        navigate('/join-room');
+        navigate("/join-room");
       } else {
-        throw new Error(data.error || 'The username or password is incorrect, please try again');
+        throw new Error(data.error || "Login failed");
       }
     } catch (error) {
-      console.error('Error during login:', error);
+      console.error("Error during login:", error);
       throw error;
     }
   };
-
   const handleCreateAccount = async (username: string, password: string): Promise<void> => {
     try {
       const hashedPassword = await hashPassword(password);
       const response = await fetch(`${config.SERVER_URL}/create-account`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password: hashedPassword }),
       });
-  
-      if (response.status === 201) {
-        setAuthenticatedUser(username);
-        navigate('/join-room');
+
+      const data = await response.json();
+      
+      if (response.status === 201 && data.ok) {
+        await handleLogin(username, password);
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Account creation failed.');
+        throw new Error(data.error || 'Account creation failed.');
       }
     } catch (error) {
       console.error('Error during account creation:', error);
@@ -72,12 +73,57 @@ function AppContent(): JSX.Element {
     }
   };
 
+
+
   const handleJoinRoom = (room: string) => {
     setGameRoom(room);
-    const newSocket = io(`${config.SERVER_URL}?username=${authenticatedUser}&room=${room}`);
+    const newSocket = io(`${config.SERVER_URL}`, {
+      withCredentials: true,
+      query: {
+        username: authenticatedUser,
+        room: room
+      }
+    });
     setSocket(newSocket);
     navigate('/game');
   };
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const response = await fetch(`${config.SERVER_URL}/auth-status`, {
+          method: "GET",
+          credentials: "include",
+        });
+        console.log(response)
+        const data = await response.json();
+        if (data.ok) {
+          setAuthenticatedUser(data.username);
+          if (window.location.pathname === '/game' || 
+              window.location.pathname === '/login' ||
+              window.location.pathname === '/create-account' || 
+              window.location.pathname === '/') {
+            navigate("/join-room");
+          }
+        } else {
+          setAuthenticatedUser(null);
+          if (window.location.pathname !== '/login' && 
+              window.location.pathname !== '/create-account') {
+            navigate("/login");
+          }
+        }
+      } catch (error) {
+        console.error("Error checking auth status:", error);
+        setAuthenticatedUser(null);
+        if (window.location.pathname !== '/login' && 
+            window.location.pathname !== '/create-account') {
+          navigate("/login");
+        }
+      }
+    };
+
+    checkAuthStatus();
+  }, [navigate]);
 
   return (
     <Routes>
@@ -100,7 +146,9 @@ function AppContent(): JSX.Element {
           authenticatedUser && gameRoom && socket ? 
             <div className="app-container">
               <div className="game-container">
-                <h1 className="game-title">Co-op Minesweeper</h1>
+                <div className="game-header">
+                  <h1 className="game-title">Co-op Minesweeper</h1>
+                </div>
                 <Board username={authenticatedUser} socket={socket} room={gameRoom} />
               </div>
             </div> : 
