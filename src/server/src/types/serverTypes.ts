@@ -10,6 +10,7 @@ export interface User {
     x: number;
     y: number;
   };
+  squaresCleared: number;
 }
 
 export interface Dictionary<T> {
@@ -37,6 +38,10 @@ export interface ServerToClientEvents {
   lobbies: (lobbies: Set<string>) => void;
   users: (users: Dictionary<User>) => void;
   error: (message: string) => void;
+  gameUpdate: (update: {
+    gameState: ReturnType<GameState["getGameState"]>;
+    users: Dictionary<User>;
+  }) => void;
 }
 
 export interface CheckLobbyRequest extends Request {

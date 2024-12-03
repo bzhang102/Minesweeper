@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Cursor } from "./Cursor";
 import { Cell } from "./Cell";
+import { UserLegend } from "./Legend";
 import {
   GameState,
   Coord,
@@ -51,21 +52,6 @@ export function Board({ socket, username, room }: BoardProps) {
     }
     return color;
   };
-
-  // Socket event handlers
-  const handleGameState = useCallback((newState: GameState) => {
-    setGameState(newState);
-
-    if (isFirstConnection) {
-      setRows(newState.board.length);
-      setColumns(newState.board[0].length);
-      setIsFirstConnection(false);
-    }
-  }, []);
-
-  const handleUsersUpdate = useCallback((newUserData: Users) => {
-    setUsers(newUserData);
-  }, []);
 
   // throttle mouse movement
   const updatePositionThrottled = useRef(
@@ -124,16 +110,26 @@ export function Board({ socket, username, room }: BoardProps) {
     };
   }, [socket]);
 
-  // Game state and users setup
+  // Socket updates
   useEffect(() => {
-    socket.on("gameState", handleGameState);
-    socket.on("users", handleUsersUpdate);
+    socket.on(
+      "gameUpdate",
+      (update: { gameState: GameState; users: Users }) => {
+        setGameState(update.gameState);
+        setUsers(update.users);
+
+        if (isFirstConnection) {
+          setRows(update.gameState.board.length);
+          setColumns(update.gameState.board[0].length);
+          setIsFirstConnection(false);
+        }
+      }
+    );
 
     return () => {
-      socket.off("gameState");
-      socket.off("users");
+      socket.off("gameUpdate");
     };
-  }, [socket, handleGameState, handleUsersUpdate]);
+  }, [socket, isFirstConnection]);
 
   // Mouse movement setup - now using window event listener
   useEffect(() => {
@@ -175,34 +171,46 @@ export function Board({ socket, username, room }: BoardProps) {
     <div className="board-container">
       <div className="game-controls">
         <div className="flags-counter">🚩 {gameState.flagsLeft}</div>
-        <div className="room-id">Room: {room}</div> {/* Display the room ID */}
+        <div className="room-id">Room: {room}</div>
         <button className="reset-button" onClick={handleReset}>
           New Game
         </button>
       </div>
 
-      <div ref={boardRef} className="game-board" style={gameBoardStyle}>
-        {gameState.board.map((row, y) =>
-          row.map((cell, x) => (
-            <Cell
-              key={`${x}-${y}`}
-              data={cell}
-              coord={{ x, y }}
-              over={gameState.status != GameStatus.PLAYING}
-              onLeftClick={handleLeftClick}
-              onRightClick={handleRightClick}
-            />
-          ))
-        )}
+      <div className="game-area">
+        <div ref={boardRef} className="game-board" style={gameBoardStyle}>
+          {gameState.board.map((row, y) =>
+            row.map((cell, x) => (
+              <Cell
+                key={`${x}-${y}`}
+                data={cell}
+                coord={{ x, y }}
+                over={gameState.status != GameStatus.PLAYING}
+                onLeftClick={handleLeftClick}
+                onRightClick={handleRightClick}
+              />
+            ))
+          )}
 
-        {gameState.status !== 0 && (
-          <div
-            className={`game-status ${gameState.status === 1 ? "won" : "lost"}`}
-          >
-            {gameState.status === 1 ? "You Won! 🎉" : "Game Over! 💥"}
-          </div>
-        )}
-        <div className="cursors-container">{renderCursors()}</div>
+          {/* Game status overlay */}
+          {gameState.status !== 0 && (
+            <div
+              className={`game-status ${
+                gameState.status === 1 ? "won" : "lost"
+              }`}
+            >
+              {gameState.status === 1 ? "You Won! 🎉" : "Game Over! 💥"}
+            </div>
+          )}
+
+          <div className="cursors-container">{renderCursors()}</div>
+        </div>
+
+        <UserLegend
+          users={users}
+          userColors={userColors}
+          currentUsername={username}
+        />
       </div>
     </div>
   );

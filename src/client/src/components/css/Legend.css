@@ -1,0 +1,61 @@
+.users-legend {
+  position: absolute;
+  right: -300px;
+  top: -100px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 200px;
+}
+
+.users-legend h3 {
+  font-size: 16px;
+  margin: 0;
+  padding: 8px 12px;
+  background-color: #333;
+  color: white;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.user-list {
+  padding: 6px;
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 4px;
+}
+
+.user-color {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.user-name {
+  font-size: 14px;
+  color: #666;
+}
+
+.user-stats {
+  color: #666;
+}
+
+.squares-cleared {
+  font-size: 14px;
+}
+
+.you-label {
+  color: #333;
+}
