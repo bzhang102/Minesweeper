@@ -54,7 +54,6 @@ export class SocketHandler {
     username: string,
     uuid: string
   ): void {
-    socket.join(room);
     console.log(`User connected with uuid ${uuid} to room ${room}`);
 
     this.gameRooms[room].connections[uuid] = socket;
@@ -71,7 +70,6 @@ export class SocketHandler {
   private emitInitialState(socket: Socket, room: string, uuid: string): void {
     this.emitGameUpdate(room);
     socket.emit("uuid", uuid);
-    socket.emit("lobbies", this.lobbies);
   }
 
   private setupEventListeners(
