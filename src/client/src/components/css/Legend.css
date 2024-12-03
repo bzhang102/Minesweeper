@@ -2,9 +2,6 @@
   position: absolute;
   right: -300px;
   top: -100px;
-}
-
-.users-legend {
   background: white;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -22,30 +19,41 @@
 }
 
 .user-list {
-  padding: 12px;
+  padding: 6px;
 }
 
 .user-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.user-item:last-child {
-  margin-bottom: 0;
+  gap: 16px;
+  padding: 4px;
 }
 
 .user-color {
-  width: 12px;
-  height: 12px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   flex-shrink: 0;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 2px;
 }
 
 .user-name {
   font-size: 14px;
   color: #666;
+}
+
+.user-stats {
+  color: #666;
+}
+
+.squares-cleared {
+  font-size: 14px;
 }
 
 .you-label {
