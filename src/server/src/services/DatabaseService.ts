@@ -1,4 +1,5 @@
 import { Client } from "pg";
+import { serverConfig } from "../config";
 import crypto from "crypto";
 
 export class DatabaseService {
@@ -6,10 +7,19 @@ export class DatabaseService {
   private static instance: DatabaseService;
 
   private constructor() {
+    // First connect to default postgres database to ensure we can create our target database
     this.client = new Client({
-      host: "localhost",
-      database: "minesweeper_db",
-      port: 5432,
+      host: serverConfig.DB.HOST,
+      port: serverConfig.DB.PORT,
+      database: "postgres", // Connect to postgres database first
+      user: serverConfig.DB.USER,
+      password: serverConfig.DB.PASSWORD,
+      ssl:
+        serverConfig.NODE_ENV === "production"
+          ? {
+              rejectUnauthorized: false,
+            }
+          : undefined,
     });
   }
 
@@ -23,9 +33,48 @@ export class DatabaseService {
   public async connect(): Promise<void> {
     try {
       await this.client.connect();
-      console.log("Connected to PostgreSQL database");
+
+      // Check if our target database exists
+      const result = await this.client.query(
+        "SELECT 1 FROM pg_database WHERE datname = $1",
+        [serverConfig.DB.NAME]
+      );
+
+      // If database doesn't exist, create it
+      if (result.rows.length === 0) {
+        // Need to use template0 to avoid encoding issues
+        await this.client.query(
+          `CREATE DATABASE ${serverConfig.DB.NAME} TEMPLATE template0`
+        );
+        console.log(`Created database ${serverConfig.DB.NAME}`);
+      }
+
+      // Close the connection to postgres database
+      await this.client.end();
+
+      // Reconnect to our target database
+      this.client = new Client({
+        host: serverConfig.DB.HOST,
+        port: serverConfig.DB.PORT,
+        database: serverConfig.DB.NAME,
+        user: serverConfig.DB.USER,
+        password: serverConfig.DB.PASSWORD,
+        ssl:
+          serverConfig.NODE_ENV === "production"
+            ? {
+                rejectUnauthorized: false,
+              }
+            : undefined,
+      });
+
+      await this.client.connect();
+      console.log(`Connected to database ${serverConfig.DB.NAME}`);
+
+      // Test the connection
+      const testResult = await this.client.query("SELECT NOW()");
+      console.log("Database connection test successful:", testResult.rows[0]);
     } catch (err) {
-      console.error("Error connecting to database:", err);
+      console.error("Database connection error:", err);
       throw err;
     }
   }
