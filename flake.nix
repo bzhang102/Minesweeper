@@ -18,18 +18,21 @@
           shellHook = ''
             echo "Starting Minesweeper Development Environment..."
 
-            # Load environment variables from .env.development
-            if [ -f src/server/.env.development ]; then
-              set -a
-              source src/server/.env.development
-              set +a
-            fi
+            # Hardcoded environment variables
+            export PORT=3000
+            export CLIENT_URL="http://localhost:5173"
+            export NODE_ENV="development"
+            export DB_HOST="localhost"
+            export DB_PORT=5432
+            export DB_NAME="minesweeper_db"
+            export DB_USER=$(whoami)
+            export DB_PASSWORD=""
 
             # Set up PostgreSQL environment variables
             export PGDATA="$PWD/src/database/data"
-            export PGHOST="127.0.0.1"  # Use localhost instead of /tmp
-            export PGPORT=5432
-            export PGUSER=$(whoami)    # Use current user instead of postgres
+            export PGHOST="127.0.0.1"
+            export PGPORT=$DB_PORT
+            export PGUSER=$DB_USER
 
             # Clean up any stale pid file
             if [ -f "$PGDATA/postmaster.pid" ]; then
@@ -41,7 +44,7 @@
               echo "Initializing PostgreSQL database..."
               mkdir -p "$PGDATA"
               chmod 700 "$PGDATA"
-              initdb -D "$PGDATA" --auth=trust --no-locale --encoding=UTF8 --username=$(whoami)
+              initdb -D "$PGDATA" --auth=trust --no-locale --encoding=UTF8 --username=$DB_USER
               
               # Modify postgresql.conf
               echo "port = $PGPORT" >> "$PGDATA/postgresql.conf"
@@ -84,12 +87,6 @@
             fi
 
             echo "PostgreSQL is running with database: $DB_NAME"
-
-            # Update the .env.development file with correct user
-            if [ -f src/server/.env.development ]; then
-              sed -i.bak "s/DB_USER=postgres/DB_USER=$(whoami)/" src/server/.env.development
-              rm src/server/.env.development.bak
-            fi
 
             # Start client and server in the background
             echo "Starting client and server..."
