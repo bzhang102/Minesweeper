@@ -7,20 +7,24 @@ export class DatabaseService {
   private static instance: DatabaseService;
 
   private constructor() {
-    // First connect to default postgres database to ensure we can create our target database
-    this.client = new Client({
-      host: serverConfig.DB.HOST,
-      port: serverConfig.DB.PORT,
-      database: "postgres", // Connect to postgres database first
-      user: serverConfig.DB.USER,
-      password: serverConfig.DB.PASSWORD,
-      ssl:
-        serverConfig.NODE_ENV === "production"
-          ? {
-              rejectUnauthorized: false,
-            }
-          : undefined,
-    });
+    // On render
+    if (process.env.DATABASE_URL) {
+      this.client = new Client({
+        connectionString: process.env.DATABASE_URL,
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      });
+    } else {
+      // Local
+      this.client = new Client({
+        host: serverConfig.DB.HOST,
+        port: serverConfig.DB.PORT,
+        database: serverConfig.DB.NAME,
+        user: serverConfig.DB.USER,
+        password: serverConfig.DB.PASSWORD,
+      });
+    }
   }
 
   public static getInstance(): DatabaseService {

@@ -11,6 +11,7 @@ export interface DatabaseConfig {
   NAME: string;
   USER: string;
   PASSWORD: string;
+  URL: string;
 }
 
 export const serverConfig = {
@@ -23,5 +24,6 @@ export const serverConfig = {
     NAME: process.env.DB_NAME || "minesweeper_db",
     USER: process.env.DB_USER || "postgres",
     PASSWORD: process.env.DB_PASSWORD || "",
+    URL: process.env.DATABASE_URL,
   },
 };
