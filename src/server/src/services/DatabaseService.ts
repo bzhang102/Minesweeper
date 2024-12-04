@@ -103,6 +103,33 @@ export class DatabaseService {
     return await this.client.query(insertQuery, values);
   }
 
+  public async validateSession(sessionToken: string): Promise<boolean> {
+    const query = `SELECT expirationtime FROM persons WHERE accesstoken = $1`;
+    const result = await this.client.query(query, [sessionToken]);
+
+    if (result.rows.length === 0) {
+        return false; // Session not found
+    }
+
+    const expirationTime = result.rows[0].expirationtime;
+
+    // Check if session is expired
+    return Date.now() < expirationTime;
+  } 
+  public async getUser(sessionToken: string): Promise<string> {
+    const query = `SELECT username FROM persons WHERE accesstoken = $1`;
+    const result = await this.client.query(query, [sessionToken]);
+
+    if (result.rows.length === 0) {
+        return ""; // Session not found
+    }
+
+    const name = result.rows[0].username;
+
+    // Check if session is expired
+    return name;
+  } 
+
   public async validateLogin(
     username: string,
     password: string
@@ -115,6 +142,39 @@ export class DatabaseService {
     } catch (error) {
       console.error("Error querying the persons table:", error);
       throw error;
+    }
+  }
+
+  public async addAccessToken(username: string, password: string): Promise<[string, Date]>{
+    const validateQuery = `SELECT * FROM persons WHERE username = $1 AND userpassword = $2`;
+
+    try {
+        const result = await this.client.query(validateQuery, [username, password]);
+
+        if (result.rows.length === 0) {
+            throw new Error("Invalid username or password");
+        }
+
+        // Generate a new access token
+        const accessToken = crypto.randomBytes(32).toString("hex");
+
+        // Set expiration time (30 days from now)
+        const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000; // Unix timestamp in ms
+
+        // Update the database with the new token and expiration
+        const updateQuery = `
+            UPDATE persons
+            SET accesstoken = $1, expirationtime = $2
+            WHERE username = $3
+        `;
+        const values = [accessToken, expiresAt, username];
+        await this.client.query(updateQuery, values);
+
+        console.log(`Access token set for user: ${username}`);
+        return [accessToken, new Date(expiresAt)]
+    } catch (error) {
+        console.error("Error setting access token:", error);
+        throw error;
     }
   }
 

@@ -2,6 +2,7 @@ CREATE TABLE persons (
     username character varying(255),
     userpassword character varying(255),
     accesstoken character varying(255),
+    expirationtime BIGINT DEFAULT NULL,
     easy_solve_time INTEGER DEFAULT NULL,
     medium_solve_time INTEGER DEFAULT NULL,
     hard_solve_time INTEGER DEFAULT NULL,

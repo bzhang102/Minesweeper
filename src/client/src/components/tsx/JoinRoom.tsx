@@ -5,9 +5,10 @@ import { config } from "../../config";
 interface JoinRoomProps {
   username: string;
   onSubmit: (room: string) => void;
+  onLogout: ()=>void
 }
 
-export function JoinRoom({ username, onSubmit }: JoinRoomProps) {
+export function JoinRoom({ username, onSubmit, onLogout }: JoinRoomProps) {
   const [room, setRoom] = useState("");
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   const [error, setError] = useState("");
@@ -128,6 +129,8 @@ export function JoinRoom({ username, onSubmit }: JoinRoomProps) {
             {isCreatingRoom ? "Switch to Join Room" : "Switch to Create Room"}
           </a>
         </p>
+        <button type="button" onClick={onLogout}>Logout</button>
+
       </div>
     </div>
   );

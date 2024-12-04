@@ -1,4 +1,4 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, response } from "express";
 import { GameState } from "../game/GameState";
 import { DatabaseService } from "./DatabaseService";
 import {
@@ -7,6 +7,7 @@ import {
   CheckLobbyRequest,
   CreateLobbyRequest,
 } from "../types/serverTypes";
+import { validate } from "uuid";
 
 export class RouteHandler {
   private router: Router;
@@ -33,7 +34,8 @@ export class RouteHandler {
     // Auth routes
     this.router.post("/create-account", this.createAccount.bind(this));
     this.router.post("/login", this.login.bind(this));
-
+    this.router.post("/cookie", this.cookie.bind(this));
+    this.router.post("/logout", this.logout.bind(this));
     // Game stats routes
     this.router.post("/update-best-time", this.updateBestTime.bind(this));
     this.router.get("/get-best-time/:username", this.getBestTime.bind(this));
@@ -61,6 +63,14 @@ export class RouteHandler {
 
     try {
       const result = await this.db.createAccount(username, password);
+      const token = await this.db.addAccessToken(username, password);
+      res.cookie("session", token[0], {
+        httpOnly: true,
+        sameSite: "lax",
+        expires: token[1],
+        path: "/",
+        secure: true,
+      });
       res.status(201).json({
         message: "Account created successfully",
         user: result.rows[0],
@@ -75,6 +85,64 @@ export class RouteHandler {
       }
     }
   }
+  private async parseCookies(cookieHeader: string): Promise<Record<string, string>> {
+    if (!cookieHeader) return {};
+    return cookieHeader.split(";").reduce((cookies, cookie) => {
+        const [key, value] = cookie.split("=").map((c) => c.trim());
+        if (key && value) cookies[key] = value;
+        return cookies;
+    }, {} as Record<string, string>);
+  }
+
+  private async cookie(req: Request, res: Response): Promise<void> {
+    const cookies = req.headers.cookie;
+
+    if (!cookies) {
+        res.status(400).json({ error: "No cookies found" });
+        return;
+    }
+
+    // Parse the cookies
+    const parsedCookies = await this.parseCookies(cookies);
+
+    // Extract the session cookie
+    const sessionCookie = parsedCookies.session;
+
+    if (!sessionCookie) {
+        res.status(401).json({ error: "Session cookie not found" });
+        return;
+    }
+
+    // Validate session
+    try {
+        const isValid = await this.db.validateSession(sessionCookie);
+        const name = await this.db.getUser(sessionCookie)
+        if (isValid) {
+            res.status(200).json({
+                message: "Token found",
+                name: name,
+                ok: true,
+            });
+        } else {
+            res.status(401).json({ error: "Invalid session token" });
+        }
+    } catch (error) {
+        console.error("Error validating session:", error);
+        res.status(500).json({ error: "Failed to validate session" });
+    }
+  }
+
+  private async logout (req: Request, res: Response): Promise<void> {
+
+    res.clearCookie("session", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: true,
+      path: "/",
+    });
+    res.status(200).json({ ok: true, message: "Logged out successfully" });
+  }
+  
 
   private async login(req: Request, res: Response): Promise<void> {
     const { username, password } = req.body;
@@ -87,6 +155,14 @@ export class RouteHandler {
     try {
       const isValid = await this.db.validateLogin(username, password);
       if (isValid) {
+        const result = await this.db.addAccessToken(username, password)
+        res.cookie("session", result[0], {
+          httpOnly: true,
+          sameSite: "lax",
+          expires: result[1],
+          path: "/",
+          secure: true,
+        });
         res.status(201).json({
           message: "Account found",
           ok: true,

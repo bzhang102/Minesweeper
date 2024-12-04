@@ -95,28 +95,59 @@ function AppContent(): JSX.Element {
     setSocket(newSocket);
     navigate("/game");
   };
+  const handleLogout = async () => {
+    console.log("here")
+    try {
+        const response = await fetch(`${config.SERVER_URL}/logout`, {
+            method: "POST",
+            credentials: "include",
+        });
 
+        const data = await response.json();
+        if (response.ok) {
+            console.log(data.message); // Optional: log the server message
+            setAuthenticatedUser(null); // Clear user state
+            localStorage.removeItem("authUser"); // Clear local storage
+            navigate("/login"); // Redirect to login page
+        } else {
+            console.error("Logout failed:", data.error || "Unknown error");
+        }
+    } catch (error) {
+        console.error("Error during logout:", error);
+    }
+  };
   useEffect(() => {
+    const sendAuthRequest = async () =>{
     // Check if user is authenticated from localStorage
-    const authUser = localStorage.getItem("authUser");
-    if (authUser) {
-      setAuthenticatedUser(authUser);
-      if (
-        window.location.pathname === "/login" ||
-        window.location.pathname === "/create-account" ||
-        window.location.pathname === "/"
-      ) {
-        navigate("/join-room");
-      }
-    } else {
-      setAuthenticatedUser(null);
-      if (
-        window.location.pathname !== "/login" &&
-        window.location.pathname !== "/create-account"
-      ) {
-        navigate("/login");
+      const response = await fetch(`${config.SERVER_URL}/cookie`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await response.json();
+      console.log(data)
+
+      if (response.status === 200) {
+          console.log("HERE")
+          setAuthenticatedUser(data.name)
+          if (
+            window.location.pathname === "/login" ||
+            window.location.pathname === "/create-account" ||
+            window.location.pathname === "/"
+          ) {
+            navigate("/join-room");
+          }        
+      } else {
+        setAuthenticatedUser(null)
+        if (
+          window.location.pathname !== "/login" &&
+          window.location.pathname !== "/create-account"
+        ) {
+          navigate("/login");
+        }
       }
     }
+    sendAuthRequest()
   }, [navigate]);
 
   return (
@@ -129,37 +160,38 @@ function AppContent(): JSX.Element {
       <Route
         path="/join-room"
         element={
-          authenticatedUser ? (
-            <JoinRoom username={authenticatedUser} onSubmit={handleJoinRoom} />
-          ) : (
-            <Login onLogin={handleLogin} />
-          )
+          <JoinRoom
+            username={authenticatedUser || "Guest"}
+            onSubmit={handleJoinRoom}
+            onLogout = {handleLogout}
+          />
         }
       />
       <Route
         path="/game"
         element={
-          authenticatedUser && gameRoom && socket ? (
+          gameRoom && socket ? (
             <div className="app-container">
               <div className="game-container">
                 <div className="game-header">
                   <h1 className="game-title">Co-op Minesweeper</h1>
                 </div>
                 <Board
-                  username={authenticatedUser}
+                  username={authenticatedUser || "Guest"}
                   socket={socket}
                   room={gameRoom}
                 />
               </div>
             </div>
           ) : (
-            <Login onLogin={handleLogin} />
+            <div>Please join a room to start playing.</div>
           )
         }
       />
       <Route path="/" element={<Login onLogin={handleLogin} />} />
     </Routes>
   );
+  
 }
 
 function App(): JSX.Element {
