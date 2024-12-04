@@ -18,7 +18,7 @@ export class SocketHandler {
   constructor(
     io: Server<ClientToServerEvents, ServerToClientEvents>,
     gameRooms: Dictionary<LobbyState>,
-    lobbies: Set<string>
+    lobbies: Set<string>,
   ) {
     this.io = io;
     this.gameRooms = gameRooms;
@@ -26,13 +26,14 @@ export class SocketHandler {
   }
 
   public handleConnection(
-    socket: Socket<ClientToServerEvents, ServerToClientEvents>
+    socket: Socket<ClientToServerEvents, ServerToClientEvents>,
   ): void {
     const username = String(socket.handshake.query["username"]);
     const room = String(socket.handshake.query["room"]);
     const uuid = uuidv4();
 
     if (!this.validateRoom(socket, room)) return;
+    socket.join(room);
 
     this.initializeUser(socket, room, username, uuid);
     this.setupEventListeners(socket, room, uuid);
@@ -52,7 +53,7 @@ export class SocketHandler {
     socket: Socket,
     room: string,
     username: string,
-    uuid: string
+    uuid: string,
   ): void {
     console.log(`User connected with uuid ${uuid} to room ${room}`);
 
@@ -63,6 +64,8 @@ export class SocketHandler {
       state: { x: -30, y: -30 },
       squaresCleared: 0,
     };
+
+    console.log("Emitting Initial State");
 
     this.emitInitialState(socket, room, uuid);
   }
@@ -75,10 +78,10 @@ export class SocketHandler {
   private setupEventListeners(
     socket: Socket,
     room: string,
-    uuid: string
+    uuid: string,
   ): void {
     socket.on("cursor_movement", (cursorPosition: User["state"]) =>
-      this.handleMovement(cursorPosition, uuid, room)
+      this.handleMovement(cursorPosition, uuid, room),
     );
 
     socket.on("disconnect", () => this.handleClose(uuid, room));
@@ -93,7 +96,7 @@ export class SocketHandler {
   private handleMovement(
     cursorPosition: User["state"],
     uuid: string,
-    room: string
+    room: string,
   ): void {
     if (!this.gameRooms[room]?.users[uuid]) return;
 
@@ -159,7 +162,11 @@ export class SocketHandler {
   }
 
   private emitGameUpdate(room: string): void {
+    console.log("trying to emit to room ", room);
     if (!this.gameRooms[room]) return;
+
+    console.log("Got past guard clause");
+    console.log(this.gameRooms[room]);
 
     this.io.to(room).emit("gameUpdate", {
       gameState: this.gameRooms[room].board.getGameState(),

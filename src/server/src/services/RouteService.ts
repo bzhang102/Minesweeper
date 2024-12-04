@@ -17,7 +17,7 @@ export class RouteHandler {
   constructor(
     db: DatabaseService,
     gameRooms: Dictionary<LobbyState>,
-    lobbies: Set<string>
+    lobbies: Set<string>,
   ) {
     this.router = Router();
     this.db = db;
@@ -120,7 +120,7 @@ export class RouteHandler {
         username,
         solveTime,
         partners,
-        difficulty
+        difficulty,
       );
       res.status(200).json(result);
     } catch (error: any) {
@@ -162,6 +162,8 @@ export class RouteHandler {
       users: {},
       connections: {},
     };
+    console.log(`Created Room ${room}`);
+    console.log(this.gameRooms[room]);
     this.lobbies.add(room);
 
     res.send({
