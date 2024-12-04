@@ -65,8 +65,6 @@ export class SocketHandler {
       squaresCleared: 0,
     };
 
-    console.log("Emitting Initial State");
-
     this.emitInitialState(socket, room, uuid);
   }
 
@@ -162,11 +160,7 @@ export class SocketHandler {
   }
 
   private emitGameUpdate(room: string): void {
-    console.log("trying to emit to room ", room);
     if (!this.gameRooms[room]) return;
-
-    console.log("Got past guard clause");
-    console.log(this.gameRooms[room]);
 
     this.io.to(room).emit("gameUpdate", {
       gameState: this.gameRooms[room].board.getGameState(),

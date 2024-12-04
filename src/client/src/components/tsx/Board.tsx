@@ -17,7 +17,7 @@ const INITIAL_GAME_STATE: GameState = {
   board: [],
   status: 0,
   flagsLeft: 40,
-  elapsedTime: 0
+  elapsedTime: 0,
 };
 
 const THROTTLE_MS = 120;
@@ -41,18 +41,20 @@ export function Board({ socket, username, room }: BoardProps) {
     medium?: string[];
     hard?: string[];
   }>({});
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(
+    null,
+  );
 
   const getDifficulty = (rows: number): string => {
     switch (rows) {
       case 8:
-        return 'easy';
+        return "easy";
       case 16:
-        return 'medium';
+        return "medium";
       case 24:
-        return 'hard';
+        return "hard";
       default:
-        return 'easy';
+        return "easy";
     }
   };
   const [start, setStart] = useState(0);
@@ -63,65 +65,64 @@ export function Board({ socket, username, room }: BoardProps) {
     const secondss = seconds % 60;
     setTimer(
       `${hours.toString().padStart(2, "0")}:${minutes
-          .toString()
-          .padStart(2, "0")}:${secondss.toString().padStart(2, "0")}`
+        .toString()
+        .padStart(2, "0")}:${secondss.toString().padStart(2, "0")}`,
     );
-  }
+  };
 
   const fetchBestTimes = useCallback(async () => {
     try {
-      const response = await fetch(`${config.SERVER_URL}/get-best-time/${username}`);
+      const response = await fetch(
+        `${config.SERVER_URL}/get-best-time/${username}`,
+      );
       const result = await response.json();
-      
+
       if (result.data) {
         setBestTimes({
           easy: result.data.easy_solve_time,
           medium: result.data.medium_solve_time,
-          hard: result.data.hard_solve_time
+          hard: result.data.hard_solve_time,
         });
         setBestTimePartners({
           easy: result.data.easy_solve_partners || [],
           medium: result.data.medium_solve_partners || [],
-          hard: result.data.hard_solve_partners || []
+          hard: result.data.hard_solve_partners || [],
         });
       }
     } catch (error) {
-      console.error('Error fetching best times:', error);
+      console.error("Error fetching best times:", error);
     }
   }, [username]);
 
   const updateBestTime = useCallback(async () => {
-    console.log(Object.keys(users))
     if (gameState.status === 1 && Object.keys(users).length >= 1) {
-      console.log("got in function")
-
       const partners = Object.values(users)
-        .filter(user => user.username !== username)
-        .map(user => user.username);
+        .filter((user) => user.username !== username)
+        .map((user) => user.username);
 
       const difficulty = getDifficulty(rows);
 
       try {
         const response = await fetch(`${config.SERVER_URL}/update-best-time`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             username,
             solveTime: Math.floor((Date.now() - start) / 1000),
             partners,
-            difficulty
-          })
+            difficulty,
+          }),
         });
 
         const result = await response.json();
-        console.log('Best time update result:', result);
-        
+        console.log("Best time update result:", result);
+
         // Refresh best times after update
         fetchBestTimes();
       } catch (error) {
-        console.error('Error updating best time:', error);
+        console.error("Error updating best time:", error);
       }
     }
   }, [gameState, users, username, rows, fetchBestTimes]);
@@ -131,20 +132,8 @@ export function Board({ socket, username, room }: BoardProps) {
     fetchBestTimes();
   }, [fetchBestTimes]);
 
-  // useEffect(() => {
-  //   const timeoutId = setTimeout(() => {
-  //     formatTime(gameState.elapsedTime);
-  //     //console.log("Game State:", gameState.elapsedTime);
-  //     //console.log("Gayheze")
-
-  //   }, 1000);
-
-  //   return () => clearTimeout(timeoutId);
-  // }, [gameState.elapsedTime]);
-
   useEffect(() => {
     if (gameState.status === 1) {
-      console.log("got here")
       updateBestTime();
     }
   }, [gameState.status]);
@@ -171,13 +160,11 @@ export function Board({ socket, username, room }: BoardProps) {
     }
     return color;
   };
- 
+
   // Socket event handlers
   const handleGameState = useCallback((newState: GameState) => {
     setGameState(newState);
-    console.log(newState.elapsedTime)
-    setStart(newState.elapsedTime)
-    console.log(start)
+    setStart(newState.elapsedTime);
     if (isFirstConnection) {
       setRows(newState.board.length);
       setColumns(newState.board[0].length);
@@ -186,16 +173,13 @@ export function Board({ socket, username, room }: BoardProps) {
   }, []);
   useEffect(() => {
     const intervalId = setInterval(() => {
-      console.log(gameState.status)
-      if(gameState.status == GameStatus.PLAYING){
-      formatTime(Math.floor((Date.now() - start) / 1000));
-      console.log(gameState.elapsedTime);
+      if (gameState.status == GameStatus.PLAYING) {
+        formatTime(Math.floor((Date.now() - start) / 1000));
       }
     }, 1000);
-  
+
     return () => clearInterval(intervalId); // Cleanup on unmount
   }, [start, gameState.elapsedTime, gameState.status]);
-
 
   const handleUsersUpdate = useCallback((newUserData: Users) => {
     setUsers(newUserData);
@@ -205,8 +189,8 @@ export function Board({ socket, username, room }: BoardProps) {
   const updatePositionThrottled = useRef(
     throttle(
       (position: object) => socket.emit("cursor_movement", position),
-      THROTTLE_MS
-    )
+      THROTTLE_MS,
+    ),
   );
 
   // Mouse movement handler
@@ -223,7 +207,7 @@ export function Board({ socket, username, room }: BoardProps) {
         y,
       });
     },
-    [updatePositionThrottled]
+    [updatePositionThrottled],
   );
 
   // Game action handlers
@@ -231,14 +215,14 @@ export function Board({ socket, username, room }: BoardProps) {
     (coord: Coord) => {
       socket.emit("click", coord);
     },
-    [socket]
+    [socket],
   );
 
   const handleRightClick = useCallback(
     (coord: Coord) => {
       socket.emit("flag", coord);
     },
-    [socket]
+    [socket],
   );
 
   const handleReset = useCallback(() => {
@@ -250,7 +234,7 @@ export function Board({ socket, username, room }: BoardProps) {
   useEffect(() => {
     socket.on("connect", () => console.log("Connected to server!"));
     socket.on("connect_error", (error: any) =>
-      console.log("Connection error:", error)
+      console.log("Connection error:", error),
     );
 
     return () => {
@@ -267,14 +251,14 @@ export function Board({ socket, username, room }: BoardProps) {
         setGameState(update.gameState);
         setUsers(update.users);
         handleGameState(update.gameState);
-        handleUsersUpdate(update.users)
+        handleUsersUpdate(update.users);
 
         if (isFirstConnection) {
           setRows(update.gameState.board.length);
           setColumns(update.gameState.board[0].length);
           setIsFirstConnection(false);
         }
-      }
+      },
     );
 
     return () => {
@@ -282,7 +266,7 @@ export function Board({ socket, username, room }: BoardProps) {
     };
   }, [socket, isFirstConnection]);
 
-  const [, forceUpdate] = useReducer(x => x + 1, 0);
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   // Mouse movement setup - now using window event listener
   useEffect(() => {
@@ -322,7 +306,7 @@ export function Board({ socket, username, room }: BoardProps) {
 
   // Format best time for display
   const formatBestTime = (seconds?: number): string => {
-    if (!seconds) return 'N/A';
+    if (!seconds) return "N/A";
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds / 60) % 60);
     const remainingSeconds = seconds % 60;
@@ -333,9 +317,9 @@ export function Board({ socket, username, room }: BoardProps) {
 
   // Render partners list
   const renderPartners = (partners?: string[]) => {
-    return partners && partners.length > 0 
-      ? partners.join(', ') 
-      : 'No partners';
+    return partners && partners.length > 0
+      ? partners.join(", ")
+      : "No partners";
   };
 
   return (
@@ -348,8 +332,8 @@ export function Board({ socket, username, room }: BoardProps) {
           New Game
         </button>
         <div className="best-times-dropdown">
-          <select 
-            value={selectedDifficulty || ""} 
+          <select
+            value={selectedDifficulty || ""}
             onChange={(e) => setSelectedDifficulty(e.target.value)}
             className="difficulty-select"
           >
@@ -360,8 +344,20 @@ export function Board({ socket, username, room }: BoardProps) {
           </select>
           {selectedDifficulty && (
             <div className="best-time-details">
-              <div>Best Time: {formatBestTime(bestTimes[selectedDifficulty as keyof typeof bestTimes])}</div>
-              <div>Partners: {renderPartners(bestTimePartners[selectedDifficulty as keyof typeof bestTimePartners])}</div>
+              <div>
+                Best Time:{" "}
+                {formatBestTime(
+                  bestTimes[selectedDifficulty as keyof typeof bestTimes],
+                )}
+              </div>
+              <div>
+                Partners:{" "}
+                {renderPartners(
+                  bestTimePartners[
+                    selectedDifficulty as keyof typeof bestTimePartners
+                  ],
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -379,7 +375,7 @@ export function Board({ socket, username, room }: BoardProps) {
                 onLeftClick={handleLeftClick}
                 onRightClick={handleRightClick}
               />
-            ))
+            )),
           )}
 
           {/* Game status overlay */}
