@@ -229,7 +229,7 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
             >
               {gameState.status === GameStatus.WON
                 ? "You Won! 🎉"
-                : `Game Over. 💥 Blame ${gameState.idiot}`}
+                : `Game Over 💥 Blame ${gameState.idiot}`}
             </div>
           )}
         </div>
