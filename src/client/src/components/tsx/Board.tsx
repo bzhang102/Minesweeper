@@ -18,6 +18,7 @@ const INITIAL_GAME_STATE: GameState = {
   status: 0,
   flagsLeft: 40,
   elapsedTime: 0,
+  idiot: "",
 };
 
 const THROTTLE_MS = 120;
@@ -213,7 +214,7 @@ export function Board({ socket, username, room }: BoardProps) {
   // Game action handlers
   const handleLeftClick = useCallback(
     (coord: Coord) => {
-      socket.emit("click", coord);
+      socket.emit("click", coord, username);
     },
     [socket],
   );
@@ -385,7 +386,9 @@ export function Board({ socket, username, room }: BoardProps) {
                 gameState.status === 1 ? "won" : "lost"
               }`}
             >
-              {gameState.status === 1 ? "You Won! 🎉" : "Game Over! 💥"}
+              {gameState.status === 1
+                ? "You Won! 🎉"
+                : `Game Over. 💥 Blame ${gameState.idiot}`}
             </div>
           )}
 

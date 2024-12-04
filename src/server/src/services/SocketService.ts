@@ -84,7 +84,9 @@ export class SocketHandler {
 
     socket.on("disconnect", () => this.handleClose(uuid, room));
 
-    socket.on("click", (move: Coord) => this.handleClick(move, uuid, room));
+    socket.on("click", (move: Coord, username: string) =>
+      this.handleClick(move, username, uuid, room),
+    );
 
     socket.on("flag", (move: Coord) => this.handleFlag(move, room));
 
@@ -120,11 +122,16 @@ export class SocketHandler {
     this.emitGameUpdate(room);
   }
 
-  private handleClick(move: Coord, uuid: string, room: string): void {
+  private handleClick(
+    move: Coord,
+    username: string,
+    uuid: string,
+    room: string,
+  ): void {
     if (!this.gameRooms[room]) return;
 
     const game = this.gameRooms[room].board;
-    const squaresCleared = game.click(move);
+    const squaresCleared = game.click(move, username);
 
     if (squaresCleared > 0) {
       this.gameRooms[room].users[uuid] = {

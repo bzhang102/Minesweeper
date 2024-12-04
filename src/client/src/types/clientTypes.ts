@@ -33,6 +33,7 @@ export interface GameState {
   status: GameStatus;
   flagsLeft: number;
   elapsedTime: number;
+  idiot: string;
 }
 
 // Socket event types
