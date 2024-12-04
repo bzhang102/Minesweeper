@@ -107,13 +107,22 @@ export function JoinRoom({ username, onSubmit }: JoinRoomProps) {
             <div className="difficulty-selection">
               <h2>Select Difficulty</h2>
               <div className="difficulty-buttons">
-                <button type="button" onClick={() => handleDifficultySelect("easy")}>
+                <button
+                  type="button"
+                  onClick={() => handleDifficultySelect("easy")}
+                >
                   Easy (8x8)
                 </button>
-                <button type="button" onClick={() => handleDifficultySelect("medium")}>
+                <button
+                  type="button"
+                  onClick={() => handleDifficultySelect("medium")}
+                >
                   Medium (16x16)
                 </button>
-                <button type="button" onClick={() => handleDifficultySelect("hard")}>
+                <button
+                  type="button"
+                  onClick={() => handleDifficultySelect("hard")}
+                >
                   Hard (24x24)
                 </button>
               </div>

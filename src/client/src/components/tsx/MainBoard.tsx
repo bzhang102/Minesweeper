@@ -38,6 +38,16 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
   }>({});
   const [start, setStart] = useState(0);
   const boardRef = useRef<HTMLDivElement>(null);
+  const hasProcessedWin = useRef(false);
+
+  type Difficulty = "easy" | "medium" | "hard";
+
+  const getBoardDifficulty = (rows: number, columns: number): Difficulty => {
+    if (rows === 8 && columns === 8) return "easy";
+    if (rows === 16 && columns === 16) return "medium";
+    if (rows === 24 && columns === 24) return "hard";
+    return "medium"; // default fallback
+  };
 
   // Fetch and update best times
   const fetchBestTimes = useCallback(async () => {
@@ -83,6 +93,67 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
     }, 1000);
     return () => clearInterval(intervalId);
   }, [start, gameState.status]);
+
+  const updateBestTime = useCallback(
+    async (difficulty: Difficulty, time: number) => {
+      try {
+        const currentBestTime = bestTimes[difficulty];
+        // Only update if there's no best time or if the new time is better
+        if (!currentBestTime || time < currentBestTime) {
+          // Get the list of unique usernames from the users object, excluding the current user
+          const partners = Object.values(users)
+            .map((user) => user.username)
+            .filter((name) => name !== username);
+
+          const response = await fetch(
+            `${config.SERVER_URL}/update-best-time`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                username,
+                difficulty,
+                solveTime: time,
+                partners,
+              }),
+            }
+          );
+
+          if (response.ok) {
+            // Refresh best times after successful update
+            await fetchBestTimes();
+          } else {
+            console.error("Failed to update best time");
+          }
+        }
+      } catch (error) {
+        console.error("Error updating best time:", error);
+      }
+    },
+    [username, users, bestTimes, fetchBestTimes]
+  );
+
+  // Add effect to handle game win and best time updates
+  useEffect(() => {
+    if (
+      gameState.status === GameStatus.WON &&
+      !hasProcessedWin.current &&
+      rows > 0 &&
+      columns > 0
+    ) {
+      const difficulty = getBoardDifficulty(rows, columns);
+      const finalTime = Math.floor((Date.now() - start) / 1000);
+
+      // Update best time
+      updateBestTime(difficulty, finalTime);
+
+      // Mark this win as processed
+      hasProcessedWin.current = true;
+    } else if (gameState.status !== GameStatus.WON) {
+      // Reset the processed flag when game is not in won state
+      hasProcessedWin.current = false;
+    }
+  }, [gameState.status, rows, columns, start, updateBestTime]);
 
   // Mouse movement
   const updatePositionThrottled = useRef(
