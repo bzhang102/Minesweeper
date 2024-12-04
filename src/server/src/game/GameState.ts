@@ -16,6 +16,7 @@ export class GameState {
   private readonly width: number;
   private readonly height: number;
   private startTime: number | null = null; // Add this
+  private idiot: string = "";
   private elapsedTime: number = 0;
   // Array of all possible directions for neighboring cells
   private static readonly DIRECTIONS: Direction[] = [
@@ -51,7 +52,7 @@ export class GameState {
             isRevealed: false,
             adjMines: 0,
             isFlagged: false,
-          }))
+          })),
       );
   }
 
@@ -68,7 +69,7 @@ export class GameState {
     }
   }
 
-  public click(move: Coord): number {
+  public click(move: Coord, username: string): number {
     if (!this.isValidMove(move)) {
       return 0;
     }
@@ -86,7 +87,7 @@ export class GameState {
     }
 
     if (cell.isMine) {
-      this.endGame(move);
+      this.endGame(move, username);
       return 0;
     }
 
@@ -96,7 +97,7 @@ export class GameState {
         this.status = GameStatus.WON;
       }
     } else if (cell.adjMines > 0) {
-      this.handleNumberClick(move);
+      this.handleNumberClick(move, username);
     }
 
     return this.squaresRevealedInMove;
@@ -132,9 +133,10 @@ export class GameState {
     this.firstClick = false;
   }
 
-  private endGame(move: Coord): void {
+  private endGame(move: Coord, username: string): void {
     this.board[move.y][move.x].isExploded = true;
     this.status = GameStatus.LOST;
+    this.idiot = username;
   }
 
   public flag(coord: Coord): boolean {
@@ -164,7 +166,7 @@ export class GameState {
 
   private checkWin(): boolean {
     return this.board.every((row) =>
-      row.every((cell) => cell.isMine || cell.isRevealed)
+      row.every((cell) => cell.isMine || cell.isRevealed),
     );
   }
 
@@ -193,7 +195,7 @@ export class GameState {
     }, 0);
   }
 
-  private handleNumberClick(coord: Coord): void {
+  private handleNumberClick(coord: Coord, username: string): void {
     const cell = this.board[coord.y][coord.x];
     let flagCount = 0;
     let surroundingCells: Coord[] = [];
@@ -225,6 +227,7 @@ export class GameState {
         if (surroundingCell.isMine) {
           surroundingCell.isExploded = true;
           this.status = GameStatus.LOST;
+          this.idiot = username;
           return;
         }
 
@@ -307,11 +310,12 @@ export class GameState {
           isFlagged: cell.isFlagged,
           adjMines: cell.isRevealed ? cell.adjMines : null,
           isMine: this.status !== GameStatus.PLAYING ? cell.isMine : null,
-        }))
+        })),
       ),
       status: this.status,
       flagsLeft: this.flagsLeft,
       elapsedTime: this.startTime,
+      idiot: this.idiot,
     };
   }
 }
