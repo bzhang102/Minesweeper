@@ -12,7 +12,6 @@ export interface DatabaseConfig {
   USER: string;
   PASSWORD: string;
   URL: string;
-  URL: string;
 }
 
 export const serverConfig = {
