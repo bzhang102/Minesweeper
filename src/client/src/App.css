@@ -7,18 +7,19 @@
 .app-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 100vh;
 }
 
 .game-container {
-  background: white;
+  max-width: 1280px;
   padding: 2rem;
+  background: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-height: 100vh;
+  margin: 0;
 }
 
 .game-title {

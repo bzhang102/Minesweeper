@@ -1,0 +1,67 @@
+.best-times-panel {
+  position: relative;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 200px;
+}
+
+.best-times-panel h3 {
+  font-size: 16px;
+  margin: 0;
+  padding: 8px 12px;
+  background-color: #333;
+  color: white;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.best-times-content {
+  padding: 12px;
+}
+
+.difficulty-select {
+  width: 100%;
+  padding: 6px;
+  margin-bottom: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+  background-color: white;
+  cursor: pointer;
+}
+
+.difficulty-select:hover {
+  border-color: #999;
+}
+
+.difficulty-select:focus {
+  outline: none;
+  border-color: #4a9eff;
+  box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+}
+
+.time-section {
+  margin-top: 8px;
+}
+
+.time-label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.time-display {
+  color: #666;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.partners-list {
+  color: #666;
+  font-size: 12px;
+  word-wrap: break-word;
+  line-height: 1.4;
+}

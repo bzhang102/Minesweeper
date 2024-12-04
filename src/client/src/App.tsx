@@ -141,16 +141,11 @@ function AppContent(): JSX.Element {
         element={
           authenticatedUser && gameRoom && socket ? (
             <div className="app-container">
-              <div className="game-container">
-                <div className="game-header">
-                  <h1 className="game-title">Co-op Minesweeper</h1>
-                </div>
-                <Board
-                  username={authenticatedUser}
-                  socket={socket}
-                  room={gameRoom}
-                />
-              </div>
+              <Board
+                username={authenticatedUser}
+                socket={socket}
+                room={gameRoom}
+              />
             </div>
           ) : (
             <Login onLogin={handleLogin} />
