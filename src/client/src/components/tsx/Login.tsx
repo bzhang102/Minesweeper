@@ -1,5 +1,4 @@
-// Login.tsx
-import React, { useState, FormEvent, MouseEvent } from 'react';
+import React, { useState, FormEvent } from "react";
 import "../css/Login.css";
 
 interface LoginProps {
@@ -7,63 +6,61 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
-  const [username, setUsername] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
-    
+    setError("");
+
     try {
       await onLogin(username, password);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'An unknown error occurred');
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className='container'>
-      <div className='header'>
-        <div className="text">Login</div>
-        <div className="underline"></div>
-      </div>
-      <form onSubmit={handleSubmit}>
+    <div className="login-container">
+      <div className="login-card">
+        <h1>Login</h1>
+
         {error && <div className="error-message">{error}</div>}
-        <div className="input">
+
+        <form className="login-form" onSubmit={handleSubmit}>
           <input
-            type='text'
-            placeholder='User name'
+            className="input-field"
+            type="text"
+            placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             disabled={isLoading}
           />
-        </div>
-        <div className="input">
+
           <input
-            type='password'
-            placeholder='Password'
+            className="input-field"
+            type="password"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
           />
-        </div>
-        <div className="submit-container">
-          <button 
-            type="submit" 
-            className="submit"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Logging in...' : 'Login'}
+
+          <button type="submit" className="submit-button" disabled={isLoading}>
+            {isLoading ? "Logging in..." : "Login"}
           </button>
+        </form>
+
+        <div className="switch-page">
+          Don't have an account? <a href="/create-account">Create Account</a>
         </div>
-      </form>
-      <div className="switch-page">
-        Don't have an account? <a href="/create-account">Create Account</a>
       </div>
     </div>
   );
