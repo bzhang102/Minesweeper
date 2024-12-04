@@ -12,6 +12,7 @@ export interface DatabaseConfig {
   USER: string;
   PASSWORD: string;
   URL: string;
+  URL: string;
 }
 
 export const serverConfig = {
@@ -22,8 +23,8 @@ export const serverConfig = {
     HOST: process.env.DB_HOST || "localhost",
     PORT: Number(process.env.DB_PORT) || 5432,
     NAME: process.env.DB_NAME || "minesweeper_db",
-    USER: process.env.DB_USER || "postgres",
+    USER: process.env.DB_USER || "",
     PASSWORD: process.env.DB_PASSWORD || "",
-    URL: process.env.DATABASE_URL,
+    URL: process.env.DATABASE_URL || "",
   },
 };
