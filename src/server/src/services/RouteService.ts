@@ -154,6 +154,10 @@ export class RouteHandler {
 
   private createLobby(req: CreateLobbyRequest, res: Response): void {
     const { gameConfig, room } = req.body;
+    if (this.gameRooms[room]) {
+      console.log(`Room ${room} already exists, exiting early`);
+      return;
+    }
     console.log(`Creating Room ${room}`);
 
     this.gameRooms[room] = {

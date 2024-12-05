@@ -11,12 +11,15 @@ export function JoinRoom({ username, onSubmit }: JoinRoomProps) {
   const [room, setRoom] = useState("");
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   const [error, setError] = useState("");
+  const [isDisabled, setIsDisabled] = useState(false);
 
   function generateRandomFourDigits() {
     return Math.floor(1000 + Math.random() * 9000).toString();
   }
 
   const handleDifficultySelect = async (difficulty: string) => {
+    if (isDisabled) return;
+    setIsDisabled(true);
     const gameConfigs = {
       easy: { width: 8, height: 8, mines: 10 },
       medium: { width: 16, height: 16, mines: 40 },
@@ -110,18 +113,21 @@ export function JoinRoom({ username, onSubmit }: JoinRoomProps) {
                 <button
                   type="button"
                   onClick={() => handleDifficultySelect("easy")}
+                  disabled={isDisabled}
                 >
                   Easy (8x8)
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDifficultySelect("medium")}
+                  disabled={isDisabled}
                 >
                   Medium (16x16)
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDifficultySelect("hard")}
+                  disabled={isDisabled}
                 >
                   Hard (24x24)
                 </button>
