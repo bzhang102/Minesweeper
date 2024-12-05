@@ -24,14 +24,18 @@ async function hashPassword(password: string): Promise<string> {
 function AppContent(): JSX.Element {
   const navigate = useNavigate();
   const [authenticatedUser, setAuthenticatedUser] = useState<string | null>(
-    null
+    null,
   );
   const [gameRoom, setGameRoom] = useState<string | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
 
+  const handleLogout = () => {
+    localStorage.removeItem("authUser");
+    navigate("/login");
+  };
   const handleLogin = async (
     username: string,
-    password: string
+    password: string,
   ): Promise<void> => {
     try {
       const hashedPassword = await hashPassword(password);
@@ -59,7 +63,7 @@ function AppContent(): JSX.Element {
 
   const handleCreateAccount = async (
     username: string,
-    password: string
+    password: string,
   ): Promise<void> => {
     try {
       const hashedPassword = await hashPassword(password);
@@ -130,7 +134,11 @@ function AppContent(): JSX.Element {
         path="/join-room"
         element={
           authenticatedUser ? (
-            <JoinRoom username={authenticatedUser} onSubmit={handleJoinRoom} />
+            <JoinRoom
+              username={authenticatedUser}
+              onSubmit={handleJoinRoom}
+              onLogout={handleLogout}
+            />
           ) : (
             <Login onLogin={handleLogin} />
           )
@@ -145,6 +153,7 @@ function AppContent(): JSX.Element {
                 username={authenticatedUser}
                 socket={socket}
                 room={gameRoom}
+                onLogout={handleLogout}
               />
             </div>
           ) : (

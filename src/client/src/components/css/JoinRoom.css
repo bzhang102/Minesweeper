@@ -81,7 +81,6 @@
   justify-content: center;
   font-family: Arial, sans-serif;
 }
-
 .difficulty-buttons button {
   padding: 0.75rem 1.5rem;
   background-color: #4a9eff;
@@ -102,7 +101,7 @@
 .difficulty-buttons button:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
-  color: #666666; 
+  color: #666666;
 }
 
 .login-card button {
@@ -125,7 +124,7 @@
 .login-card button:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
-  color: #666666; 
+  color: #666666;
 }
 
 .error-message {
@@ -158,8 +157,31 @@
   .login-card {
     padding: 1.5rem;
   }
-  
+
   .login-card h1 {
     font-size: 1.5rem;
   }
+}
+
+.logout-button {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+  font-family: Arial, sans-serif;
+}
+
+.logout-button button {
+  padding: 0.75rem 1.5rem;
+  background-color: #cc241d;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-weight: bold;
+}
+
+.logout-button button:hover:not(:disabled) {
+  background-color: #fb4934;
 }

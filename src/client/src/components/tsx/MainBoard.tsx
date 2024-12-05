@@ -22,9 +22,15 @@ interface MainBoardProps {
   socket: Socket;
   username: string;
   room: string;
+  onLogout: () => void;
 }
 
-export function MainBoard({ socket, username, room }: MainBoardProps) {
+export function MainBoard({
+  socket,
+  username,
+  room,
+  onLogout,
+}: MainBoardProps) {
   const [users, setUsers] = useState<Users>({});
   const [userColors, setUserColors] = useState<{ [uuid: string]: string }>({});
   const [rows, setRows] = useState(0);
@@ -197,6 +203,11 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
     socket.emit("reset");
   }, [socket]);
 
+  const handleLogout = useCallback(() => {
+    socket.disconnect();
+    onLogout();
+  }, [socket, onLogout]);
+
   // Socket update handlers
   const handleGameState = useCallback(
     (newState: GameState) => {
@@ -267,6 +278,9 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
   return (
     <div className="board-container">
       <div className="game-controls">
+        <button className="logout-game-button" onClick={handleLogout}>
+          Logout
+        </button>
         <div className="flags-counter">🚩 {gameState.flagsLeft}</div>
         <div className="game-timer">{timer}</div>
         <div className="room-id">Room: {room}</div>

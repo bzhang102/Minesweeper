@@ -63,6 +63,7 @@ export interface BoardProps {
   socket: any;
   username: string;
   room: string;
+  onLogout: () => void;
 }
 
 export interface User {

@@ -1,85 +1,90 @@
 .board-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+}
+
+.game-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.logout-game-button,
+.flags-counter,
+.game-timer,
+.reset-button,
+.room-id {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  background: #333;
+  border: none;
+  border-radius: 0;
+  height: 32px;
+  line-height: 16px;
+  box-sizing: border-box;
+}
+
+.logout-game-button:hover {
+  background: #cc241d;
+  cursor: pointer;
+}
+.reset-button:hover {
+  background: #444;
+  cursor: pointer;
+}
+
+.game-area {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.game-board {
+  background: #ddd;
+  padding: 1px;
+  position: relative;
+}
+
+.game-status {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 12px 24px;
+  border-radius: 20px;
+  background: white;
+  color: #000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  animation: popIn 0.3s ease-out;
+  min-width: 200px;
+  text-align: center;
+  z-index: 10;
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+.won {
+  background: #e8f5e9;
+}
+
+.lost {
+  background: #fbe9e7;
+  color: #c92a2a;
+}
+
+@keyframes popIn {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
   }
-  
-  .game-controls {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 16px;
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
   }
-  
-  .flags-counter, 
-  .game-timer, 
-  .reset-button, 
-  .room-id {
-    padding: 8px 16px;
-    font-size: 14px;
-    font-weight: 500;
-    color: white;
-    background: #333;
-    border: none;
-    border-radius: 0;
-    height: 32px;
-    line-height: 16px;
-    box-sizing: border-box;
-  }
-  
-  .reset-button:hover {
-    background: #444;
-    cursor: pointer;
-  }
-  
-  .game-area {
-    display: flex;
-    gap: 24px;
-    align-items: flex-start;
-  }
-  
-  .game-board {
-    background: #ddd;
-    padding: 1px;
-    position: relative;
-  }
-  
-  .game-status {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 12px 24px;
-    border-radius: 20px;
-    background: white;
-    color: #000;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    animation: popIn 0.3s ease-out;
-    min-width: 200px;
-    text-align: center;
-    z-index: 10;
-    font-size: 16px;
-    white-space: nowrap;
-  }
-  
-  .won { 
-    background: #e8f5e9; 
-  }
-  
-  .lost { 
-    background: #fbe9e7;
-    color: #c92a2a;
-  }
-  
-  @keyframes popIn {
-    0% {
-      transform: translate(-50%, -50%) scale(0.5);
-      opacity: 0;
-    }
-    100% {
-      transform: translate(-50%, -50%) scale(1);
-      opacity: 1;
-    }
-  }
+}
