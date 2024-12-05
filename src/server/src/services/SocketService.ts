@@ -158,6 +158,7 @@ export class SocketHandler {
     if (!this.gameRooms[room]) return;
 
     this.gameRooms[room].board = new GameState(this.gameRooms[room].config);
+    this.gameRooms[room].board.resetTimer();
     Object.keys(this.gameRooms[room].users).forEach((userUuid) => {
       this.gameRooms[room].users[userUuid] = {
         ...this.gameRooms[room].users[userUuid],

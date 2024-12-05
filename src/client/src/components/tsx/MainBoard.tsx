@@ -12,7 +12,7 @@ const INITIAL_GAME_STATE: GameState = {
   board: [],
   status: 0,
   flagsLeft: 40,
-  elapsedTime: 0,
+  startTime: null,
   idiot: "",
 };
 
@@ -36,7 +36,7 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
   const [bestTimePartners, setBestTimePartners] = useState<{
     [key: string]: string[];
   }>({});
-  const [start, setStart] = useState(0);
+  const [start, setStart] = useState<number | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const hasProcessedWin = useRef(false);
 
@@ -87,7 +87,9 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      if (gameState.status === GameStatus.PLAYING) {
+      if (gameState.startTime === null) {
+        setTimer("00:00:00");
+      } else if (gameState.status === GameStatus.PLAYING && start) {
         formatTime(Math.floor((Date.now() - start) / 1000));
       }
     }, 1000);
@@ -139,7 +141,8 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
       gameState.status === GameStatus.WON &&
       !hasProcessedWin.current &&
       rows > 0 &&
-      columns > 0
+      columns > 0 &&
+      start
     ) {
       const difficulty = getBoardDifficulty(rows, columns);
       const finalTime = Math.floor((Date.now() - start) / 1000);
@@ -198,7 +201,7 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
   const handleGameState = useCallback(
     (newState: GameState) => {
       setGameState(newState);
-      setStart(newState.elapsedTime);
+      setStart(newState.startTime);
       if (isFirstConnection) {
         setRows(newState.board.length);
         setColumns(newState.board[0].length);
