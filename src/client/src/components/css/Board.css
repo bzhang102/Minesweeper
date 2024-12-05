@@ -1,104 +1,17 @@
-.board-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  position: relative;
-}
-
-.cursors-container {
-  position: absolute;
-  pointer-events: none;
-}
-
-.game-controls {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.flags-counter, .game-timer, .reset-button, .room-id {
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  color: white;
-  background: #333;
-  border: none;
-  border-radius: 0;
-  height: 32px;
-  line-height: 16px;
-  box-sizing: border-box;
-}
-
-.reset-button:hover {
-  background: #444;
-}
-
-.best-times-dropdown {
-  position: relative;
-}
-
-.difficulty-select {
-  padding: 8px 16px;
-  font-size: 14px;
-  background: #333;
-  color: white;
-  border: none;
-  appearance: none;
-  cursor: pointer;
-  height: 32px;
-}
-
-.difficulty-select:hover {
-  background: #444;
-}
-
-.best-time-details {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  background: #333;
-  color: white;
-  padding: 8px;
-  z-index: 10;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  font-size: 12px;
-}
-
-.best-time-details div {
-  margin: 4px 0;
-}
-
-.game-status {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 12px 24px;
-  border-radius: 20px;
+.game-container {
   background: white;
-  color: #000;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  animation: popIn 0.3s ease-out;
+  padding: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.won { background: #e8f5e9; }
-
-.lost { background: #fbe9e7; }
-
-.game-status.lost {
-  color: #c92a2a;
+.game-header {
+  margin-bottom: 2rem;
 }
 
-@keyframes popIn {
-  0% {
-    transform: translate(-50%, -50%) scale(0.5);
-    opacity: 0;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
+.game-title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
 }

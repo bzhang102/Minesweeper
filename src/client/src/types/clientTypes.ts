@@ -32,7 +32,7 @@ export interface GameState {
   board: Cell[][];
   status: GameStatus;
   flagsLeft: number;
-  elapsedTime: number;
+  startTime: number | null;
   idiot: string;
 }
 

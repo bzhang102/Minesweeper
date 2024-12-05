@@ -172,16 +172,11 @@ function AppContent(): JSX.Element {
         element={
           gameRoom && socket ? (
             <div className="app-container">
-              <div className="game-container">
-                <div className="game-header">
-                  <h1 className="game-title">Co-op Minesweeper</h1>
-                </div>
-                <Board
-                  username={authenticatedUser || "Guest"}
-                  socket={socket}
-                  room={gameRoom}
-                />
-              </div>
+              <Board
+                username={authenticatedUser || "Guest"}
+                socket={socket}
+                room={gameRoom}
+              />
             </div>
           ) : (
             <div>Please join a room to start playing.</div>
