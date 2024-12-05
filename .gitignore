@@ -15,10 +15,8 @@ out/
 # Environment variables
 .env
 .env.local
-# .env.development
 .env.development.local
 .env.test.local
-# .env.production
 .env.production.local
 
 # Logs
@@ -49,15 +47,9 @@ Thumbs.db
 .vite/
 
 # Postgres
-.postgres/
-*.dump
+src/database/data/
+**/*.postgres/
+postgresql.log
 
-# Cache directories
-.cache/
-.temp/
-
-# System files
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
+# Local Netlify folder
+.netlify

@@ -32,6 +32,8 @@ export interface GameState {
   board: Cell[][];
   status: GameStatus;
   flagsLeft: number;
+  startTime: number | null;
+  idiot: string;
 }
 
 // Socket event types
@@ -61,6 +63,7 @@ export interface BoardProps {
   socket: any;
   username: string;
   room: string;
+  onLogout: () => void;
 }
 
 export interface User {
