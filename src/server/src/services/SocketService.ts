@@ -115,6 +115,7 @@ export class SocketHandler {
     delete this.gameRooms[room].users[uuid];
 
     if (Object.keys(this.gameRooms[room].users).length === 0) {
+      console.log(`Room ${room} is empty, deleting`);
       this.lobbies.delete(room);
       delete this.gameRooms[room];
     }
@@ -132,8 +133,9 @@ export class SocketHandler {
 
     const game = this.gameRooms[room].board;
     const squaresCleared = game.click(move, username);
+    const status = game.getGameState();
 
-    if (squaresCleared > 0) {
+    if (squaresCleared > 0 || status.status === 2) {
       this.gameRooms[room].users[uuid] = {
         ...this.gameRooms[room].users[uuid],
         squaresCleared:

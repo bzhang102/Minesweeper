@@ -53,7 +53,7 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
   const fetchBestTimes = useCallback(async () => {
     try {
       const response = await fetch(
-        `${config.SERVER_URL}/get-best-time/${username}`
+        `${config.SERVER_URL}/get-best-time/${username}`,
       );
       const result = await response.json();
       if (result.data) {
@@ -81,7 +81,7 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
     setTimer(
       `${hours.toString().padStart(2, "0")}:${minutes
         .toString()
-        .padStart(2, "0")}:${secondss.toString().padStart(2, "0")}`
+        .padStart(2, "0")}:${secondss.toString().padStart(2, "0")}`,
     );
   };
 
@@ -116,7 +116,7 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
                 solveTime: time,
                 partners,
               }),
-            }
+            },
           );
 
           if (response.ok) {
@@ -130,7 +130,7 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
         console.error("Error updating best time:", error);
       }
     },
-    [username, users, bestTimes, fetchBestTimes]
+    [username, users, bestTimes, fetchBestTimes],
   );
 
   // Add effect to handle game win and best time updates
@@ -159,8 +159,8 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
   const updatePositionThrottled = useRef(
     throttle(
       (position: object) => socket.emit("cursor_movement", position),
-      THROTTLE_MS
-    )
+      THROTTLE_MS,
+    ),
   );
 
   const handleMouseMove = useCallback(
@@ -171,7 +171,7 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
       const y = e.clientY - rect.top;
       updatePositionThrottled.current({ x, y });
     },
-    [updatePositionThrottled]
+    [updatePositionThrottled],
   );
 
   useEffect(() => {
@@ -182,12 +182,12 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
   // Game actions
   const handleLeftClick = useCallback(
     (coord: Coord) => socket.emit("click", coord, username),
-    [socket, username]
+    [socket, username],
   );
 
   const handleRightClick = useCallback(
     (coord: Coord) => socket.emit("flag", coord),
-    [socket]
+    [socket],
   );
 
   const handleReset = useCallback(() => {
@@ -205,7 +205,7 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
         setIsFirstConnection(false);
       }
     },
-    [isFirstConnection]
+    [isFirstConnection],
   );
 
   useEffect(() => {
@@ -214,7 +214,7 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
       (update: { gameState: GameState; users: Users }) => {
         handleGameState(update.gameState);
         setUsers(update.users);
-      }
+      },
     );
 
     return () => {
@@ -289,7 +289,7 @@ export function MainBoard({ socket, username, room }: MainBoardProps) {
                 onLeftClick={handleLeftClick}
                 onRightClick={handleRightClick}
               />
-            ))
+            )),
           )}
 
           {gameState.status !== GameStatus.PLAYING && (
