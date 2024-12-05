@@ -80,6 +80,7 @@ cd multiplayer-minesweeper
 ```bash
 nix develop
 ```
-3. Install dependencies
+3. Install dependencies in both src/client and src/server
 ```bash
-npm install
+cd src/client && npm install
+cd ../server && npm install
