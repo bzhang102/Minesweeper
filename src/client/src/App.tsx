@@ -153,6 +153,7 @@ function AppContent(): JSX.Element {
                 username={authenticatedUser}
                 socket={socket}
                 room={gameRoom}
+                onLogout={handleLogout}
               />
             </div>
           ) : (
