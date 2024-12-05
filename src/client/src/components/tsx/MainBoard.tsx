@@ -7,6 +7,7 @@ import { BestTimesPanel } from "./BestTimesPanel";
 import { PlayersPanel } from "./PlayersPanel";
 import { GameState, Coord, Users, GameStatus } from "../../types/clientTypes";
 import "../css/MainBoard.css";
+import Cursor from "./Cursor";
 
 const INITIAL_GAME_STATE: GameState = {
   board: [],
@@ -59,7 +60,7 @@ export function MainBoard({
   const fetchBestTimes = useCallback(async () => {
     try {
       const response = await fetch(
-        `${config.SERVER_URL}/get-best-time/${username}`,
+        `${config.SERVER_URL}/get-best-time/${username}`
       );
       const result = await response.json();
       if (result.data) {
@@ -87,7 +88,7 @@ export function MainBoard({
     setTimer(
       `${hours.toString().padStart(2, "0")}:${minutes
         .toString()
-        .padStart(2, "0")}:${secondss.toString().padStart(2, "0")}`,
+        .padStart(2, "0")}:${secondss.toString().padStart(2, "0")}`
     );
   };
 
@@ -124,7 +125,7 @@ export function MainBoard({
                 solveTime: time,
                 partners,
               }),
-            },
+            }
           );
 
           if (response.ok) {
@@ -138,7 +139,7 @@ export function MainBoard({
         console.error("Error updating best time:", error);
       }
     },
-    [username, users, bestTimes, fetchBestTimes],
+    [username, users, bestTimes, fetchBestTimes]
   );
 
   // Add effect to handle game win and best time updates
@@ -168,20 +169,40 @@ export function MainBoard({
   const updatePositionThrottled = useRef(
     throttle(
       (position: object) => socket.emit("cursor_movement", position),
-      THROTTLE_MS,
-    ),
+      THROTTLE_MS
+    )
   );
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
       if (!boardRef.current) return;
       const rect = boardRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      // Get the scroll position
+      const scrollX = window.scrollX || window.pageXOffset;
+      const scrollY = window.scrollY || window.pageYOffset;
+      // Calculate position relative to the viewport and add scroll offset
+      const x = e.clientX + scrollX - (rect.left + scrollX);
+      const y = e.clientY + scrollY - (rect.top + scrollY);
       updatePositionThrottled.current({ x, y });
     },
-    [updatePositionThrottled],
+    [updatePositionThrottled]
   );
+
+  const renderCursors = () => {
+    return Object.entries(users).map(([userUuid, user]) => {
+      if (user.username === username) {
+        return null;
+      }
+      return (
+        <Cursor
+          key={userUuid}
+          color={userColors[userUuid]}
+          x={user.state.x}
+          y={user.state.y}
+        />
+      );
+    });
+  };
 
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove);
@@ -191,12 +212,12 @@ export function MainBoard({
   // Game actions
   const handleLeftClick = useCallback(
     (coord: Coord) => socket.emit("click", coord, username),
-    [socket, username],
+    [socket, username]
   );
 
   const handleRightClick = useCallback(
     (coord: Coord) => socket.emit("flag", coord),
-    [socket],
+    [socket]
   );
 
   const handleReset = useCallback(() => {
@@ -219,7 +240,7 @@ export function MainBoard({
         setIsFirstConnection(false);
       }
     },
-    [isFirstConnection],
+    [isFirstConnection]
   );
 
   useEffect(() => {
@@ -228,7 +249,7 @@ export function MainBoard({
       (update: { gameState: GameState; users: Users }) => {
         handleGameState(update.gameState);
         setUsers(update.users);
-      },
+      }
     );
 
     return () => {
@@ -265,16 +286,6 @@ export function MainBoard({
     fetchBestTimes();
   }, [fetchBestTimes]);
 
-  const gameBoardStyle: React.CSSProperties = {
-    background: "#ddd",
-    padding: "1px",
-    display: "grid",
-    gridTemplateColumns: `repeat(${columns}, 30px)`,
-    gridTemplateRows: `repeat(${rows}, 30px)`,
-    gap: "1px",
-    position: "relative",
-  };
-
   return (
     <div className="board-container">
       <div className="game-controls">
@@ -295,38 +306,47 @@ export function MainBoard({
           bestTimePartners={bestTimePartners}
         />
 
-        <div ref={boardRef} className="game-board" style={gameBoardStyle}>
-          {gameState.board.map((row, y) =>
-            row.map((cell, x) => (
-              <Cell
-                key={`${x}-${y}`}
-                data={cell}
-                coord={{ x, y }}
-                over={gameState.status !== GameStatus.PLAYING}
-                onLeftClick={handleLeftClick}
-                onRightClick={handleRightClick}
-              />
-            )),
-          )}
+        <div className="board-with-cursors">
+          <div
+            ref={boardRef}
+            className="game-board"
+            style={{
+              gridTemplateColumns: `repeat(${columns}, 30px)`,
+              gridTemplateRows: `repeat(${rows}, 30px)`,
+            }}
+          >
+            {gameState.board.map((row, y) =>
+              row.map((cell, x) => (
+                <Cell
+                  key={`${x}-${y}`}
+                  data={cell}
+                  coord={{ x, y }}
+                  over={gameState.status !== GameStatus.PLAYING}
+                  onLeftClick={handleLeftClick}
+                  onRightClick={handleRightClick}
+                />
+              ))
+            )}
 
-          {gameState.status !== GameStatus.PLAYING && (
-            <div
-              className={`game-status ${
-                gameState.status === GameStatus.WON ? "won" : "lost"
-              }`}
-            >
-              {gameState.status === GameStatus.WON
-                ? "You Won! 🎉"
-                : `Game Over 💥 Blame ${gameState.idiot}`}
-            </div>
-          )}
+            {gameState.status !== GameStatus.PLAYING && (
+              <div
+                className={`game-status ${
+                  gameState.status === GameStatus.WON ? "won" : "lost"
+                }`}
+              >
+                {gameState.status === GameStatus.WON
+                  ? "You Won! 🎉"
+                  : `Game Over 💥 Blame ${gameState.idiot}`}
+              </div>
+            )}
+          </div>
+          <div className="cursors-container">{renderCursors()}</div>
         </div>
 
         <PlayersPanel
           users={users}
           userColors={userColors}
           currentUsername={username}
-          boardRef={boardRef}
         />
       </div>
     </div>
