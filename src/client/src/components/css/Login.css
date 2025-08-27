@@ -30,6 +30,8 @@
   margin-bottom: 2rem;
 }
 
+
+
 .login-form {
   display: flex;
   flex-direction: column;
@@ -43,6 +45,7 @@
   border-radius: 4px;
   font-size: 1rem;
   transition: border-color 0.2s;
+
 }
 
 .input-field:focus {
@@ -50,6 +53,8 @@
   border-color: #4a9eff;
   box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
 }
+
+
 
 .submit-button {
   padding: 0.75rem;
