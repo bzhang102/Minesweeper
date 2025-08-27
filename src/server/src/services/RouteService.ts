@@ -17,7 +17,7 @@ export class RouteHandler {
   constructor(
     db: DatabaseService,
     gameRooms: Dictionary<LobbyState>,
-    lobbies: Set<string>,
+    lobbies: Set<string>
   ) {
     this.router = Router();
     this.db = db;
@@ -33,6 +33,7 @@ export class RouteHandler {
     // Auth routes
     this.router.post("/create-account", this.createAccount.bind(this));
     this.router.post("/login", this.login.bind(this));
+    this.router.post("/guest-login", this.guestLogin.bind(this));
 
     // Game stats routes
     this.router.post("/update-best-time", this.updateBestTime.bind(this));
@@ -102,6 +103,22 @@ export class RouteHandler {
     }
   }
 
+  private async guestLogin(req: Request, res: Response): Promise<void> {
+    try {
+      // Generate a unique guest username
+      const guestId = Math.random().toString(36).substring(2, 8);
+      const guestUsername = `Guest_${guestId}`;
+
+      res.status(200).json({
+        message: "Guest login successful",
+        username: guestUsername,
+        ok: true,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Internal error" });
+    }
+  }
+
   private async updateBestTime(req: Request, res: Response): Promise<void> {
     const { username, solveTime, partners, difficulty } = req.body;
 
@@ -120,7 +137,7 @@ export class RouteHandler {
         username,
         solveTime,
         partners,
-        difficulty,
+        difficulty
       );
       res.status(200).json(result);
     } catch (error: any) {

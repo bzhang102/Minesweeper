@@ -31,6 +31,7 @@ function AppContent(): JSX.Element {
 
   const handleLogout = () => {
     localStorage.removeItem("authUser");
+    localStorage.removeItem("isGuest");
     navigate("/login");
   };
   const handleLogin = async (
@@ -87,6 +88,75 @@ function AppContent(): JSX.Element {
     }
   };
 
+  const handleGuestLogin = async (): Promise<void> => {
+    try {
+      console.log(
+        "Attempting guest login to:",
+        `${config.SERVER_URL}/guest-login`
+      );
+
+      const response = await fetch(`${config.SERVER_URL}/guest-login`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server response:", response.status, errorText);
+
+        if (response.status === 404) {
+          throw new Error(
+            "Guest login endpoint not found. Please ensure the server is running and updated."
+          );
+        } else if (response.status >= 500) {
+          throw new Error("Server error. Please try again later.");
+        } else {
+          throw new Error(`Request failed: ${response.status}`);
+        }
+      }
+
+      const data = await response.json();
+      console.log("Guest login response data:", data);
+
+      if (data.ok) {
+        // Store guest authentication state
+        localStorage.setItem("authUser", data.username);
+        localStorage.setItem("isGuest", "true");
+        setAuthenticatedUser(data.username);
+        navigate("/join-room");
+      } else {
+        throw new Error(data.error || "Guest login failed");
+      }
+    } catch (error) {
+      console.error("Error during guest login:", error);
+
+      // Fallback: generate guest username locally if server is unavailable
+      if (
+        error instanceof Error &&
+        (error.message.includes("JSON") ||
+          error.message.includes("Failed to fetch") ||
+          error.message.includes("NetworkError"))
+      ) {
+        console.log("Server unavailable, using local guest login fallback");
+        const guestId = Math.random().toString(36).substring(2, 8);
+        const guestUsername = `Guest_${guestId}`;
+
+        // Store guest authentication state
+        localStorage.setItem("authUser", guestUsername);
+        localStorage.setItem("isGuest", "true");
+        setAuthenticatedUser(guestUsername);
+        navigate("/join-room");
+        return;
+      }
+
+      throw error;
+    }
+  };
+
   const handleJoinRoom = (room: string) => {
     setGameRoom(room);
     const newSocket = io(`${config.SERVER_URL}`, {
@@ -125,7 +195,12 @@ function AppContent(): JSX.Element {
 
   return (
     <Routes>
-      <Route path="/login" element={<Login onLogin={handleLogin} />} />
+      <Route
+        path="/login"
+        element={
+          <Login onLogin={handleLogin} onGuestLogin={handleGuestLogin} />
+        }
+      />
       <Route
         path="/create-account"
         element={<CreateAccount onCreateAccount={handleCreateAccount} />}
@@ -140,7 +215,7 @@ function AppContent(): JSX.Element {
               onLogout={handleLogout}
             />
           ) : (
-            <Login onLogin={handleLogin} />
+            <Login onLogin={handleLogin} onGuestLogin={handleGuestLogin} />
           )
         }
       />
@@ -157,11 +232,16 @@ function AppContent(): JSX.Element {
               />
             </div>
           ) : (
-            <Login onLogin={handleLogin} />
+            <Login onLogin={handleLogin} onGuestLogin={handleGuestLogin} />
           )
         }
       />
-      <Route path="/" element={<Login onLogin={handleLogin} />} />
+      <Route
+        path="/"
+        element={
+          <Login onLogin={handleLogin} onGuestLogin={handleGuestLogin} />
+        }
+      />
     </Routes>
   );
 }

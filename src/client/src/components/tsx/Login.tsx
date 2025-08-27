@@ -3,12 +3,14 @@ import "../css/Login.css";
 
 interface LoginProps {
   onLogin: (username: string, password: string) => Promise<void>;
+  onGuestLogin: () => Promise<void>;
 }
 
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
+const Login: React.FC<LoginProps> = ({ onLogin, onGuestLogin }) => {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isGuestLoading, setIsGuestLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -24,6 +26,21 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       );
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGuestLogin = async () => {
+    setIsGuestLoading(true);
+    setError("");
+
+    try {
+      await onGuestLogin();
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
+    } finally {
+      setIsGuestLoading(false);
     }
   };
 
@@ -57,6 +74,18 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             {isLoading ? "Logging in..." : "Login"}
           </button>
         </form>
+
+        <div className="divider">
+          <span>or</span>
+        </div>
+
+        <button
+          className="guest-button"
+          onClick={handleGuestLogin}
+          disabled={isGuestLoading}
+        >
+          {isGuestLoading ? "Joining as Guest..." : "Play as Guest"}
+        </button>
 
         <div className="switch-page">
           Don't have an account? <a href="/create-account">Create Account</a>
