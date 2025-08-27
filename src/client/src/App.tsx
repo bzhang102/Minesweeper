@@ -24,7 +24,7 @@ async function hashPassword(password: string): Promise<string> {
 function AppContent(): JSX.Element {
   const navigate = useNavigate();
   const [authenticatedUser, setAuthenticatedUser] = useState<string | null>(
-    null,
+    null
   );
   const [gameRoom, setGameRoom] = useState<string | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -35,7 +35,7 @@ function AppContent(): JSX.Element {
   };
   const handleLogin = async (
     username: string,
-    password: string,
+    password: string
   ): Promise<void> => {
     try {
       const hashedPassword = await hashPassword(password);
@@ -63,7 +63,7 @@ function AppContent(): JSX.Element {
 
   const handleCreateAccount = async (
     username: string,
-    password: string,
+    password: string
   ): Promise<void> => {
     try {
       const hashedPassword = await hashPassword(password);
@@ -170,6 +170,19 @@ function App(): JSX.Element {
   return (
     <Router>
       <AppContent />
+      <div className="banner">
+        <p className="banner-text">
+          Built with ❤️ by bored friends who wanted to do something fun together
+          <a
+            href="https://github.com/bzhang102/Minesweeper"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#fff", textDecoration: "none" }}
+          >
+            &nbsp;&nbsp;📖 View on GitHub
+          </a>
+        </p>
+      </div>
     </Router>
   );
 }
